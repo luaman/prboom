@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: st_stuff.c,v 1.4 2000/05/11 19:58:12 proff_fs Exp $
+ * $Id: st_stuff.c,v 1.1 2000/05/04 08:17:29 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -35,7 +32,7 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: st_stuff.c,v 1.4 2000/05/11 19:58:12 proff_fs Exp $";
+rcsid[] = "$Id: st_stuff.c,v 1.1 2000/05/04 08:17:29 proff_fs Exp $";
 
 #include "doomdef.h"
 #include "doomstat.h"
@@ -399,11 +396,11 @@ void ST_refreshBackground(void)
       V_DrawBlock(ST_X, 0, BG, sbar_width, sbar_height, sbar, VPT_NONE);
 
       // killough 3/7/98: make face background change with displayplayer
-      if (netgame)
-      {
+      if (netgame) {
+	int whattrans = playernumtotrans[displayplayer];
         V_DrawMemPatch(ST_FX, 0, BG, faceback, 
-		       displayplayer ? CR_LIMIT+displayplayer : CR_DEFAULT, 
-		       displayplayer ? VPT_TRANS : VPT_NONE);
+		       whattrans ? translationtables + 256*(whattrans-1) : NULL, 
+		       whattrans ? VPT_TRANS : VPT_NONE);
       }
 
       V_CopyRect(ST_X, 0, BG, ST_WIDTH, ST_HEIGHT, ST_X, ST_Y, FG);
@@ -756,39 +753,39 @@ void ST_drawWidgets(boolean refresh)
 
   //jff 2/16/98 make color of ammo depend on amount
   if (*w_ready.num*100 < ammo_red*plyr->maxammo[weaponinfo[w_ready.data].ammo])
-    STlib_updateNum(&w_ready, CR_RED, refresh);
+    STlib_updateNum(&w_ready, cr_red, refresh);
   else
     if (*w_ready.num*100 <
         ammo_yellow*plyr->maxammo[weaponinfo[w_ready.data].ammo])
-      STlib_updateNum(&w_ready, CR_GOLD, refresh);
+      STlib_updateNum(&w_ready, cr_gold, refresh);
     else
-      STlib_updateNum(&w_ready, CR_GREEN, refresh);
+      STlib_updateNum(&w_ready, cr_green, refresh);
 
   for (i=0;i<4;i++)
     {
-      STlib_updateNum(&w_ammo[i], CR_DEFAULT, refresh);   //jff 2/16/98 no xlation
-      STlib_updateNum(&w_maxammo[i], CR_DEFAULT, refresh);
+      STlib_updateNum(&w_ammo[i], NULL, refresh);   //jff 2/16/98 no xlation
+      STlib_updateNum(&w_maxammo[i], NULL, refresh);
     }
 
   //jff 2/16/98 make color of health depend on amount
   if (*w_health.n.num<health_red)
-    STlib_updatePercent(&w_health, CR_RED, refresh);
+    STlib_updatePercent(&w_health, cr_red, refresh);
   else if (*w_health.n.num<health_yellow)
-    STlib_updatePercent(&w_health, CR_GOLD, refresh);
+    STlib_updatePercent(&w_health, cr_gold, refresh);
   else if (*w_health.n.num<=health_green)
-    STlib_updatePercent(&w_health, CR_GREEN, refresh);
+    STlib_updatePercent(&w_health, cr_green, refresh);
   else
-    STlib_updatePercent(&w_health, CR_BLUE2, refresh); //killough 2/28/98
+    STlib_updatePercent(&w_health, cr_blue_status, refresh); //killough 2/28/98
 
   //jff 2/16/98 make color of armor depend on amount
   if (*w_armor.n.num<armor_red)
-    STlib_updatePercent(&w_armor, CR_RED, refresh);
+    STlib_updatePercent(&w_armor, cr_red, refresh);
   else if (*w_armor.n.num<armor_yellow)
-    STlib_updatePercent(&w_armor, CR_GOLD, refresh);
+    STlib_updatePercent(&w_armor, cr_gold, refresh);
   else if (*w_armor.n.num<=armor_green)
-    STlib_updatePercent(&w_armor, CR_GREEN, refresh);
+    STlib_updatePercent(&w_armor, cr_green, refresh);
   else
-    STlib_updatePercent(&w_armor, CR_BLUE2, refresh); //killough 2/28/98
+    STlib_updatePercent(&w_armor, cr_blue_status, refresh); //killough 2/28/98
 
   STlib_updateBinIcon(&w_armsbg, refresh);
 
@@ -800,7 +797,7 @@ void ST_drawWidgets(boolean refresh)
   for (i=0;i<3;i++)
     STlib_updateMultIcon(&w_keyboxes[i], refresh);
 
-  STlib_updateNum(&w_frags, CR_DEFAULT, refresh);
+  STlib_updateNum(&w_frags, NULL, refresh);
 
 }
 
@@ -831,14 +828,10 @@ void ST_Drawer(boolean fullscreen, boolean refresh)
 
   ST_doPaletteStuff();  // Do red-/gold-shifts from damage/items
 
-#ifdef GL_DOOM
-  return;
-#else
   if (st_firsttime)
     ST_doRefresh();     // If just after ST_Start(), refresh all
   else
     ST_diffDraw();      // Otherwise, update as little as possible
-#endif
 }
 
 //
@@ -898,7 +891,7 @@ else var = (const patch_t*)W_CacheLumpName(name)
 
   // status bar background bits
   if (doload)
-    sbar = V_PatchToBlock("STBAR", CR_DEFAULT, VPT_NONE, 
+    sbar = V_PatchToBlock("STBAR", NULL, VPT_NONE, 
 		  &sbar_width, &sbar_height);
   else {
     free(sbar); sbar=NULL;
@@ -1152,3 +1145,177 @@ void ST_Init(void)
   screens[4] = Z_Malloc(SCREENWIDTH*ST_HEIGHT, PU_STATIC, 0);
 //  screens[4] = Z_Malloc(ST_WIDTH*ST_HEIGHT, PU_STATIC, 0);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: st_stuff.c,v $
+// Revision 1.1  2000/05/04 08:17:29  proff_fs
+// Initial revision
+//
+// Revision 1.8  1999/10/12 13:01:14  cphipps
+// Changed header to GPL
+//
+// Revision 1.7  1999/10/06 07:53:47  cphipps
+// Let D_Display have complete contol over whether the status bar
+// is displayed or not
+//
+// Revision 1.6  1999/03/24 13:57:12  cphipps
+// Do player face background by translation, instead of seperate images per-colour
+//
+// Revision 1.5  1999/03/07 22:17:30  cphipps
+// Changed for new automap mode variable
+//
+// Revision 1.4  1999/01/01 10:15:08  cphipps
+// Unified approach to lump acquiring/releasing
+// Palette handling done through new V_SetPalette function
+//
+// Revision 1.3  1998/12/31 14:14:59  cphipps
+// Updated patch drawing
+// Made all patch_t*'s into const patch_t*'s
+//
+// Revision 1.3  1998/12/31 12:48:50  cphipps
+// Patch drawing updated
+// Converted patch_t*'s to const patch_t*'s
+//
+// Revision 1.2  1998/11/17 12:20:14  cphipps
+// Integrated updated st_stuff.c from PrBoom v2.02 into LxDoom
+//
+// Revision 1.46  1998/05/06  16:05:40  jim
+// formatting and documenting
+//
+// Revision 1.45  1998/05/03  22:50:58  killough
+// beautification, move external declarations, remove cheats
+//
+// Revision 1.44  1998/04/27  17:30:39  jim
+// Fix DM demo/newgame status, remove IDK (again)
+//
+// Revision 1.43  1998/04/27  02:30:12  killough
+// fuck you
+//
+// Revision 1.42  1998/04/24  23:52:31  thldrmn
+// Removed idk cheat
+//
+// Revision 1.41  1998/04/24  11:39:23  killough
+// Fix cheats while demo is played back
+//
+// Revision 1.40  1998/04/19  01:10:19  killough
+// Generalize cheat engine to add deh support
+//
+// Revision 1.39  1998/04/16  06:26:06  killough
+// Prevent cheats from working inside menu
+//
+// Revision 1.38  1998/04/12  10:58:24  jim
+// IDMUSxy for DOOM 1 fix
+//
+// Revision 1.37  1998/04/12  10:23:52  jim
+// IDMUS00 ok in DOOM 1
+//
+// Revision 1.36  1998/04/12  02:00:39  killough
+// Change tranmap to main_tranmap
+//
+// Revision 1.35  1998/04/12  01:08:51  jim
+// Fixed IDMUS00 crash
+//
+// Revision 1.34  1998/04/11  14:48:11  thldrmn
+// Replaced IDK with TNTKA cheat
+//
+// Revision 1.33  1998/04/10  06:36:45  killough
+// Fix -fast parameter bugs
+//
+// Revision 1.32  1998/03/31  10:37:17  killough
+// comment clarification
+//
+// Revision 1.31  1998/03/28  18:09:19  killough
+// Fix deh-cheat self-annihilation bug, make iddt closer to Doom
+//
+// Revision 1.30  1998/03/28  05:33:02  jim
+// Text enabling changes for DEH
+//
+// Revision 1.29  1998/03/23  15:24:54  phares
+// Changed pushers to linedef control
+//
+// Revision 1.28  1998/03/23  06:43:26  jim
+// linedefs reference initial version
+//
+// Revision 1.27  1998/03/23  03:40:46  killough
+// Fix idclip bug, make monster kills message smart
+//
+// Revision 1.26  1998/03/20  00:30:37  phares
+// Changed friction to linedef control
+//
+// Revision 1.25  1998/03/17  20:44:32  jim
+// fixed idmus non-restore, space bug
+//
+// Revision 1.24  1998/03/12  14:35:01  phares
+// New cheat codes
+//
+// Revision 1.23  1998/03/10  07:14:38  jim
+// Initial DEH support added, minus text
+//
+// Revision 1.22  1998/03/09  07:31:48  killough
+// Fix spy mode to display player correctly, add TNTFAST
+//
+// Revision 1.21  1998/03/06  05:31:02  killough
+// PEst control, from the TNT'EM man
+//
+// Revision 1.20  1998/03/02  15:35:03  jim
+// Enabled Lee's status changes, added new types to common.cfg
+//
+// Revision 1.19  1998/03/02  12:09:18  killough
+// blue status bar color, monsters_remember, traditional_keys
+//
+// Revision 1.18  1998/02/27  11:00:58  phares
+// Can't own weapons that don't exist
+//
+// Revision 1.17  1998/02/26  22:57:45  jim
+// Added message review display to HUD
+//
+// Revision 1.16  1998/02/24  08:46:45  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.15  1998/02/24  04:14:19  jim
+// Added double keys to status
+//
+// Revision 1.14  1998/02/23  04:57:29  killough
+// Fix TNTEM cheat again, add new cheats
+//
+// Revision 1.13  1998/02/20  21:57:07  phares
+// Preliminarey sprite translucency
+//
+// Revision 1.12  1998/02/19  23:15:52  killough
+// Add TNTAMMO in addition to TNTAMO
+//
+// Revision 1.11  1998/02/19  16:55:22  jim
+// Optimized HUD and made more configurable
+//
+// Revision 1.10  1998/02/18  00:59:20  jim
+// Addition of HUD
+//
+// Revision 1.9  1998/02/17  06:15:48  killough
+// Add TNTKEYxx, TNTAMOx, TNTWEAPx cheats, and cheat engine support for them.
+//
+// Revision 1.8  1998/02/15  02:48:01  phares
+// User-defined keys
+//
+// Revision 1.7  1998/02/09  03:19:04  killough
+// Rewrite cheat code engine, add IDK and TNTHOM
+//
+// Revision 1.6  1998/02/02  22:19:01  jim
+// Added TNTEM cheat to kill every monster alive
+//
+// Revision 1.5  1998/01/30  18:48:10  phares
+// Changed textspeed and textwait to functions
+//
+// Revision 1.4  1998/01/30  16:09:03  phares
+// Faster end-mission text display
+//
+// Revision 1.3  1998/01/28  12:23:05  phares
+// TNTCOMP cheat code added
+//
+// Revision 1.2  1998/01/26  19:24:58  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:03  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: r_defs.h,v 1.7 2000/05/12 21:31:20 proff_fs Exp $
+ * $Id: r_defs.h,v 1.1 2000/05/04 08:15:46 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -91,9 +88,6 @@ typedef struct
 
 typedef struct
 {
-#ifdef GL_DOOM
-  int iSectorID; // proff 04/05/2000: needed for OpenGL and used in debugmode by the HUD to draw sectornum
-#endif
   fixed_t floorheight;
   fixed_t ceilingheight;
   int nexttag,firsttag;  // killough 1/30/98: improves searches for tags.
@@ -103,12 +97,6 @@ typedef struct
   degenmobj_t soundorg;  // origin for any sounds played by the sector
   int validcount;        // if == validcount, already checked
   mobj_t *thinglist;     // list of mobjs in sector
-
-  /* killough 8/28/98: friction is a sector property, not an mobj property.
-   * these fields used to be in mobj_t, but presented performance problems
-   * when processed as mobj properties. Fix is to make them sector properties.
-   */
-  int friction,movefactor;
 
   // thinker_t for reversable actions
   void *floordata;    // jff 2/22/98 make thinkers on
@@ -190,9 +178,6 @@ typedef enum
 
 typedef struct line_s
 {
-#ifdef GL_DOOM
-  int iLineID;           // proff 04/05/2000: needed for OpenGL
-#endif
   vertex_t *v1, *v2;     // Vertices, from v1 to v2.
   fixed_t dx, dy;        // Precalculated v2 - v1 for side checking.
   short flags;           // Animation related.
@@ -263,9 +248,6 @@ typedef struct msecnode_s
 //
 typedef struct
 {
-#ifdef GL_DOOM
-  int iSegID; // proff 11/05/2000: needed for OpenGL
-#endif
   vertex_t *v1, *v2;
   fixed_t offset;
   angle_t angle;
@@ -347,14 +329,6 @@ typedef struct
   int columnofs[8];     // only [width] used
 } patch_t;
 
-// proff: Added for OpenGL
-typedef struct
-{
-  int width,height;
-  int leftoffset,topoffset;
-  int lumpnum;
-} patchnum_t;
-
 //
 // A vissprite_t is a thing that will be drawn during a refresh.
 // i.e. a sprite object that is partly visible.
@@ -362,10 +336,6 @@ typedef struct
 
 typedef struct vissprite_s
 {
-#ifdef GL_DOOM
-  mobj_t *thing;
-  boolean flip;
-#endif
   int x1, x2;
   fixed_t gx, gy;              // for line side calculation
   fixed_t gz, gzt;             // global bottom / top for silhouette clipping
@@ -374,13 +344,14 @@ typedef struct vissprite_s
   fixed_t xiscale;             // negative if flipped
   fixed_t texturemid;
   int patch;
-  uint_64_t mobjflags;
+  int mobjflags;
 
   // for color translation and shadow draw, maxbright frames as well
   lighttable_t *colormap;
    
   // killough 3/27/98: height sector for underwater/fake ceiling support
   int heightsec;
+
 } vissprite_t;
 
 //  
@@ -445,3 +416,84 @@ typedef struct visplane
 } visplane_t;
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: r_defs.h,v $
+// Revision 1.1  2000/05/04 08:15:46  proff_fs
+// Initial revision
+//
+// Revision 1.6  1999/10/12 13:01:16  cphipps
+// Changed header to GPL
+//
+// Revision 1.5  1999/09/19 10:29:39  cphipps
+// Add rendering flags to line_t
+//
+// Revision 1.4  1999/02/08 20:18:23  cphipps
+// Reorder structure elements for optimisations in R_AddLine
+//
+// Revision 1.3  1999/02/02 09:18:04  cphipps
+// Add field for marking MBF enhanced skies
+//
+// Revision 1.2  1999/01/25 16:00:34  cphipps
+// Remove global math.h include
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.18  1998/04/27  02:12:59  killough
+// Program beautification
+//
+// Revision 1.17  1998/04/17  10:36:44  killough
+// Improve linedef tag searches (see p_spec.c)
+//
+// Revision 1.16  1998/04/12  02:08:31  killough
+// Add ceiling light property, translucent walls
+//
+// Revision 1.15  1998/04/07  06:52:40  killough
+// Simplify sector_thinglist traversal to use simpler markers
+//
+// Revision 1.14  1998/04/06  04:42:42  killough
+// Add dynamic colormaps, thinglist_validcount
+//
+// Revision 1.13  1998/03/28  18:03:26  killough
+// Add support for underwater sprite clipping
+//
+// Revision 1.12  1998/03/23  03:34:11  killough
+// Add support for an arbitrary number of colormaps
+//
+// Revision 1.11  1998/03/20  00:30:33  phares
+// Changed friction to linedef control
+//
+// Revision 1.10  1998/03/16  12:41:54  killough
+// Add support for floor lightlevel from other sector
+//
+// Revision 1.9  1998/03/09  07:33:44  killough
+// Add scroll effect fields, remove FP for point/line queries
+//
+// Revision 1.8  1998/03/02  11:49:58  killough
+// Support for flats scrolling
+//
+// Revision 1.7  1998/02/27  11:50:49  jim
+// Fixes for stairs
+//
+// Revision 1.6  1998/02/23  00:42:24  jim
+// Implemented elevators
+//
+// Revision 1.5  1998/02/17  22:58:30  jim
+// Fixed bug of vanishinb secret sectors in automap
+//
+// Revision 1.4  1998/02/09  03:21:20  killough
+// Allocate MAX screen height/width in arrays
+//
+// Revision 1.3  1998/02/02  14:19:49  killough
+// Improve searching of matching sector tags
+//
+// Revision 1.2  1998/01/26  19:27:36  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:09  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

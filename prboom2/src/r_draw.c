@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: r_draw.c,v 1.5 2000/05/11 22:44:35 proff_fs Exp $
+ * $Id: r_draw.c,v 1.1 2000/05/04 08:15:59 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -35,7 +32,7 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: r_draw.c,v 1.5 2000/05/11 22:44:35 proff_fs Exp $";
+rcsid[] = "$Id: r_draw.c,v 1.1 2000/05/04 08:15:59 proff_fs Exp $";
 
 #include "doomstat.h"
 #include "w_wad.h"
@@ -135,7 +132,7 @@ byte    *dc_source;      // first pixel in a column (possibly virtual)
 //  be used. It has also been used with Wolfenstein 3D.
 // 
 
-#ifndef I386_ASM     // killough 2/15/98
+#ifndef I386     // killough 2/15/98
 
 void R_DrawColumn_Normal (void) 
 {
@@ -275,7 +272,7 @@ void R_DrawColumn_Normal (void)
          if (frac < 0)
            while ((frac += heightmask) <  0);
          else
-           while (frac >= (int)heightmask)
+           while (frac >= heightmask)
              frac -= heightmask;
            
          while(count>0)
@@ -287,7 +284,7 @@ void R_DrawColumn_Normal (void)
              
              *dest = colormap[source[frac>>FRACBITS]];
              dest += scrwid; 
-             if ((frac += fracstep) >= (int)heightmask)
+             if ((frac += fracstep) >= heightmask)
                frac -= heightmask;
             count--;
            } 
@@ -310,7 +307,7 @@ void R_DrawColumn_Normal (void)
 // opaque' decision is made outside this routine, not down where the
 // actual code differences are.
 
-#ifndef I386_ASM                       // killough 2/21/98: converted to x86 asm
+#ifndef I386                       // killough 2/21/98: converted to x86 asm
 
 void R_DrawTLColumn_Normal (void)                                           
 { 
@@ -362,7 +359,7 @@ void R_DrawTLColumn_Normal (void)
         if (frac < 0)
           while ((frac += heightmask) <  0);
         else
-          while (frac >= (int)heightmask)
+          while (frac >= heightmask)
             frac -= heightmask;
         
         do
@@ -374,7 +371,7 @@ void R_DrawTLColumn_Normal (void)
               
             *dest = tranmap[(*dest<<8)+colormap[source[frac>>FRACBITS]]]; // phares
             dest += SCREENWIDTH; 
-            if ((frac += fracstep) >= (int)heightmask)
+            if ((frac += fracstep) >= heightmask)
               frac -= heightmask;
           } 
         while (--count);
@@ -450,9 +447,9 @@ void R_DrawFuzzColumn(void)
     return; 
     
 #ifdef RANGECHECK 
-  if ((unsigned) dc_x >= (unsigned)SCREENWIDTH
+  if ((unsigned) dc_x >= SCREENWIDTH
       || dc_yl < 0 
-      || (unsigned)dc_yh >= (unsigned)SCREENHEIGHT)
+      || dc_yh >= SCREENHEIGHT)
     I_Error ("R_DrawFuzzColumn: %i to %i at %i",
              dc_yl, dc_yh, dc_x);
 #endif
@@ -519,9 +516,9 @@ void R_DrawTranslatedColumn (void)
     return; 
                                  
 #ifdef RANGECHECK 
-  if ((unsigned)dc_x >= (unsigned)SCREENWIDTH
+  if ((unsigned)dc_x >= SCREENWIDTH
       || dc_yl < 0
-      || (unsigned)dc_yh >= (unsigned)SCREENHEIGHT)
+      || dc_yh >= SCREENHEIGHT)
     I_Error ( "R_DrawColumn: %i to %i at %i",
               dc_yl, dc_yh, dc_x);
 #endif 
@@ -625,7 +622,7 @@ fixed_t ds_ystep;
 // start of a 64*64 tile image 
 byte *ds_source;        
 
-#ifndef I386_ASM      // killough 2/15/98
+#ifndef I386      // killough 2/15/98
 
 void R_DrawSpan (void) 
 { 
@@ -770,7 +767,7 @@ void R_FillBackScreen (void)
     patch = W_GetNumForName("brdr_b");
     
     for (x=0; x<scaledviewwidth; x+=8)
-      V_DrawNumPatch(viewwindowx+x, viewwindowy+viewheight, 1, patch, CR_DEFAULT, VPT_NONE);
+      V_DrawNumPatch(viewwindowx+x, viewwindowy+viewheight, 1, patch, NULL, VPT_NONE);
   }
 // proff 08/17/98: Changed for high-res
 // proff/nicolas 09/20/98: Moved down for high-res
@@ -779,29 +776,29 @@ void R_FillBackScreen (void)
 
   patch = W_GetNumForName("brdr_t");
   for (x=0; x<scaledviewwidth; x+=8)
-    V_DrawNumPatch(viewwindowx+x, viewwindowy-8, 1, patch, CR_DEFAULT, VPT_NONE);
+    V_DrawNumPatch(viewwindowx+x, viewwindowy-8, 1, patch, NULL, VPT_NONE);
 
   patch = W_GetNumForName("brdr_l");
   for (y=0; y<viewheight; y+=8)
-    V_DrawNumPatch(viewwindowx-8, viewwindowy+y, 1, patch, CR_DEFAULT, VPT_NONE);
+    V_DrawNumPatch(viewwindowx-8, viewwindowy+y, 1, patch, NULL, VPT_NONE);
 
   patch = W_GetNumForName("brdr_r");
   for (y=0; y<viewheight; y+=8)
     V_DrawNumPatch(viewwindowx+scaledviewwidth, viewwindowy+y, 
-		   1, patch, CR_DEFAULT, VPT_NONE);
+		   1, patch, NULL, VPT_NONE);
 
   // Draw beveled edge. 
   V_DrawNamePatch(viewwindowx-8, viewwindowy-8, 1,
-		  "brdr_tl", CR_DEFAULT, VPT_NONE);
+		  "brdr_tl", NULL, VPT_NONE);
     
   V_DrawNamePatch(viewwindowx+scaledviewwidth, viewwindowy-8,
-              1, "brdr_tr", CR_DEFAULT, VPT_NONE);
+              1, "brdr_tr", NULL, VPT_NONE);
     
   V_DrawNamePatch(viewwindowx-8, viewwindowy+viewheight,
-		  1, "brdr_bl", CR_DEFAULT, VPT_NONE);
+		  1, "brdr_bl", NULL, VPT_NONE);
     
   V_DrawNamePatch(viewwindowx+scaledviewwidth, viewwindowy+viewheight,
-		  1, "brdr_br", CR_DEFAULT, VPT_NONE);
+		  1, "brdr_br", NULL, VPT_NONE);
 } 
 
 //
@@ -877,3 +874,119 @@ void R_DrawViewBorder(void)
 
   V_MarkRect (0,0,SCREENWIDTH, SCREENHEIGHT-SBARHEIGHT); 
 } 
+
+//----------------------------------------------------------------------------
+//
+// $Log: r_draw.c,v $
+// Revision 1.1  2000/05/04 08:15:59  proff_fs
+// Initial revision
+//
+// Revision 1.16  2000/05/01 17:50:36  Proff
+// made changes to compile with VisualC and SDL
+//
+// Revision 1.15  1999/11/01 17:09:15  cphipps
+// Added lprintf.h (needed for RANGECHECK debugging I_Error calls)
+//
+// Revision 1.14  1999/10/12 13:01:14  cphipps
+// Changed header to GPL
+//
+// Revision 1.13  1999/08/31 19:33:00  cphipps
+// Modified R_DrawViewBorder so it draws the border either side of the status bar
+// always when on the automap
+//
+// Revision 1.12  1999/03/24 13:47:34  cphipps
+// Player colours done properly, colourmap is used to get darker colours for that
+// colour without assuming palette order
+//
+// Revision 1.11  1999/03/22 12:09:54  cphipps
+// Extend configurable player colour support
+//
+// Revision 1.10  1999/02/08 08:46:30  cphipps
+// Fix status bar width to use macro (to pick up status bar scaling)
+//
+// Revision 1.9  1999/02/04 21:36:45  cphipps
+// Improved status bar height handling
+//
+// Revision 1.8  1999/01/29 22:21:10  cphipps
+// Remove columnofs[]
+// Use multiplies instead of ylookup[] for non-i386 targets
+// Verified to compile without -DI386
+// Included leban's optimised R_DrawColumn and comments
+//
+// Revision 1.7  1998/12/31 23:05:26  cphipps
+// New wad lump handling
+// Made tranmap's const
+//
+// Revision 1.6  1998/12/31 11:23:46  cphipps
+// Patch drawing updated
+// R_FillBackScreen recoded slightly
+//
+// Revision 1.5  1998/12/28 13:11:40  cphipps
+// Made multiplayer colours controlled by variable
+//
+// Revision 1.4  1998/12/24 18:08:45  cphipps
+// Add bevelled edge to background either side of status bar
+// Remove unused array
+//
+// Revision 1.3  1998/11/17 07:58:11  cphipps
+// Hi-res changes
+//
+// Revision 1.2  1998/10/17 14:59:30  cphipps
+// Specify type on heightmask variables (was defaulting to int)
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.2  1998/09/13 11:15:42  cphipps
+// Comment out C versions of asm'ed funcs for I386 targets, instead of DJGPP
+//
+// Revision 1.16  1998/05/03  22:41:46  killough
+// beautification
+//
+// Revision 1.15  1998/04/19  01:16:48  killough
+// Tidy up last fix's code
+//
+// Revision 1.14  1998/04/17  15:26:55  killough
+// fix showstopper
+//
+// Revision 1.13  1998/04/12  01:57:51  killough
+// Add main_tranmap
+//
+// Revision 1.12  1998/03/23  03:36:28  killough
+// Use new 'fullcolormap' for fuzzy columns
+//
+// Revision 1.11  1998/02/23  04:54:59  killough
+// #ifdef out translucency code since its in asm
+//
+// Revision 1.10  1998/02/20  21:57:04  phares
+// Preliminarey sprite translucency
+//
+// Revision 1.9  1998/02/17  06:23:40  killough
+// #ifdef out code duplicated in asm for djgpp targets
+//
+// Revision 1.8  1998/02/09  03:18:02  killough
+// Change MAXWIDTH, MAXHEIGHT defintions
+//
+// Revision 1.7  1998/02/02  13:17:55  killough
+// performance tuning
+//
+// Revision 1.6  1998/01/27  16:33:59  phares
+// more testing
+//
+// Revision 1.5  1998/01/27  16:32:24  phares
+// testing
+//
+// Revision 1.4  1998/01/27  15:56:58  phares
+// Comment about invisibility
+//
+// Revision 1.3  1998/01/26  19:24:40  phares
+// First rev with no ^Ms
+//
+// Revision 1.2  1998/01/26  05:05:55  killough
+// Use unrolled version of R_DrawSpan
+//
+// Revision 1.1.1.1  1998/01/19  14:03:02  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: z_zone.c,v 1.4 2000/05/09 21:45:40 proff_fs Exp $
+ * $Id: z_zone.c,v 1.1 2000/05/04 08:19:30 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -41,7 +38,7 @@
  *-----------------------------------------------------------------------------
  */
 
-static const char rcsid[] = "$Id: z_zone.c,v 1.4 2000/05/09 21:45:40 proff_fs Exp $";
+static const char rcsid[] = "$Id: z_zone.c,v 1.1 2000/05/04 08:19:30 proff_fs Exp $";
 
 // use config.h if autoconf made one -- josh
 #ifdef HAVE_CONFIG_H
@@ -247,10 +244,11 @@ void Z_Init(void)
 #ifdef DJGPP
   size_t size = _go32_dpmi_remaining_physical_memory();    // Get free RAM
 #else
-  /* cph - Select zone size. 6megs is usable, but with the SDL version 
-   * storing sounds in the zone, 8 is more sensible */
-  size_t size = MIN_RAM*2; 
-  {  /* cph - allow -heapsize or -heapkb parameters */
+  // CPhipps - allow -heapsize or -heapkb parameters
+  size_t size = (MIN_RAM*3)/2; // CPhipps - 6 Mb is enough for 
+  // the original Doom ][ levels at high-res, if people want to run 
+  // something massive like SIMPEVIL they'll need more
+  {
     int p;
     if ((p=M_CheckParm("-heapsize")))
       if (++p < myargc) {
@@ -287,7 +285,7 @@ void Z_Init(void)
     else
       size -= RETRY_AMOUNT;
 
-  lprintf(LO_INFO,"Z_Init : Allocated %luKb zone memory\n", (long unsigned)size >> 10);
+  printf("Z_Init : Allocated %luKb zone memory\n", (long unsigned)size >> 10);
 
   // Align on cache boundary
 
@@ -361,12 +359,7 @@ void *(Z_Malloc)(size_t size, int tag, void **user
         {                                   // replacement is roughly FIFO
           start = block->prev;
           Z_Free((char *) block + HEADER_SIZE);
-	  /* cph - If start->next == block, we did not merge with the previous
-	   *       If !=, we did, so we continue from start.
-	   *  Important: we've reset start
-	   */
-	  if (start->next == block) start = start->next;
-	  else block = start;
+          block = start = start->next;      // Important: resets start
         }
 
       if (block->tag == PU_FREE && block->size >= size)   // First-fit
@@ -573,10 +566,6 @@ void (Z_FreeTags)(int lowtag, int hightag
 {
   memblock_t *block = zone;
 
-#ifdef HEAPDUMP
-  Z_DumpMemory();
-#endif
-
   if (lowtag <= PU_FREE)
     lowtag = PU_FREE+1;
 
@@ -633,6 +622,10 @@ void (Z_FreeTags)(int lowtag, int hightag
 
         block = next;               // Advance to next block
       }
+
+#ifdef HEAPDUMP
+  Z_DumpMemory();
+#endif
 }
 
 void (Z_ChangeTag)(void *ptr, int tag
@@ -755,3 +748,92 @@ void (Z_CheckHeap)(
               );
   while ((block=block->next) != zone);
 }
+
+//-----------------------------------------------------------------------------
+//
+// $Log: z_zone.c,v $
+// Revision 1.1  2000/05/04 08:19:30  proff_fs
+// Initial revision
+//
+// Revision 1.13  2000/04/10 17:19:21  cph
+// Remove file & line debugging from z_zone.* when not debugging
+//
+// Revision 1.12  2000/04/09 13:39:46  cph
+// Get ./configure heap dumping option working
+// Fix w_wad.c check
+//
+// Revision 1.11  2000/04/09 10:30:37  cph
+// Fix Z_FreeTags logic so it doesn't skip blocks
+// Fix vm blocks block->size (again)
+// Add new heap dumping function
+// Fix virtual_memory accounting
+// Make memory scrambling scramble the whole block rather than just the
+//  allocated part
+//
+// Revision 1.10  1999/10/31 12:49:44  cphipps
+// Use lprintf.h for I_Error
+//
+// Revision 1.9  1999/10/12 13:01:15  cphipps
+// Changed header to GPL
+//
+// Revision 1.8  1999/10/02 11:59:50  cphipps
+// Diagnostics options now set in config.h
+//
+// Revision 1.7  1999/03/26 11:52:26  cphipps
+// Make INSTRUMENTED compile without warnings
+//
+// Revision 1.6  1999/02/09 20:57:58  cphipps
+// Fix VM code lost in INSTRUMENTED define
+//
+// Revision 1.5  1998/12/20 14:35:19  cphipps
+// Increase default RAM usage to 6 Mb
+//
+// Revision 1.4  1998/10/20 07:03:39  cphipps
+// dprintf -> doom_printf
+//
+// Revision 1.3  1998/10/01 08:23:05  cphipps
+// Fixed warning due to size_t arg of printf
+//
+// Revision 1.2  1998/09/23 09:39:32  cphipps
+// Add support for -heapsize and -heapkb for non-DJGPP versions.
+// Print out the allocated memory.
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.13  1998/05/12  06:11:55  killough
+// Improve memory-related error messages
+//
+// Revision 1.12  1998/05/03  22:37:45  killough
+// beautification
+//
+// Revision 1.11  1998/04/27  01:49:39  killough
+// Add history of malloc/free and scrambler (INSTRUMENTED only)
+//
+// Revision 1.10  1998/03/28  18:10:33  killough
+// Add memory scrambler for debugging
+//
+// Revision 1.9  1998/03/23  03:43:56  killough
+// Make Z_CheckHeap() more diagnostic
+//
+// Revision 1.8  1998/03/02  11:40:02  killough
+// Put #ifdef CHECKHEAP around slow heap checks (debug)
+//
+// Revision 1.7  1998/02/02  13:27:45  killough
+// Additional debug info turned on with #defines
+//
+// Revision 1.6  1998/01/26  19:25:15  phares
+// First rev with no ^Ms
+//
+// Revision 1.5  1998/01/26  07:15:43  phares
+// Added rcsid
+//
+// Revision 1.4  1998/01/26  06:12:30  killough
+// Fix memory usage problems and improve debug stat display
+//
+// Revision 1.3  1998/01/22  05:57:20  killough
+// Allow use of virtual memory when physical memory runs out
+//
+// ???
+//
+//-----------------------------------------------------------------------------

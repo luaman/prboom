@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: m_menu.c,v 1.5 2000/05/09 21:45:38 proff_fs Exp $
+ * $Id: m_menu.c,v 1.1 2000/05/04 08:10:03 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -37,12 +34,9 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: m_menu.c,v 1.5 2000/05/09 21:45:38 proff_fs Exp $";
+rcsid[] = "$Id: m_menu.c,v 1.1 2000/05/04 08:10:03 proff_fs Exp $";
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-#ifdef HAVE_UNISTD_H
+#ifdef HAVE_UNISTD
 #include <unistd.h>
 #endif
 #ifdef _MSC_VER
@@ -68,7 +62,7 @@ rcsid[] = "$Id: m_menu.c,v 1.5 2000/05/09 21:45:38 proff_fs Exp $";
 #include "lprintf.h"
 #include "am_map.h"
 
-extern patchnum_t hu_font[HU_FONTSIZE];
+extern patch_t* hu_font[HU_FONTSIZE];
 extern boolean  message_dontfuckwithme;
           
 extern boolean chat_on;          // in heads-up code
@@ -382,7 +376,7 @@ menu_t MainDef =
 void M_DrawMainMenu(void)
 {
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(94, 2, 0, "M_DOOM", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(94, 2, 0, "M_DOOM", NULL, VPT_STRETCH);
 }
 
 /////////////////////////////
@@ -478,11 +472,11 @@ void M_DrawReadThis1(void)
     case shareware:
     case registered:
       // CPhipps - patch drawing updated
-      V_DrawNamePatch(0, 0, 0, "HELP2", CR_DEFAULT, VPT_STRETCH);
+      V_DrawNamePatch(0, 0, 0, "HELP2", NULL, VPT_STRETCH);
       break;
     case retail:   // killough 2/21/98: Fix Ultimate Doom help screen:
       // CPhipps - patch drawing updated
-      V_DrawNamePatch(0, 0, 0, "CREDIT", CR_DEFAULT, VPT_STRETCH);
+      V_DrawNamePatch(0, 0, 0, "CREDIT", NULL, VPT_STRETCH);
       break;
     default:
       break;
@@ -504,7 +498,7 @@ void M_DrawReadThis2(void)
       // This hack keeps us from having to change menus.
 
       // CPhipps - patch drawing updated
-      V_DrawNamePatch(0, 0, 0, "CREDIT", CR_DEFAULT, VPT_STRETCH);
+      V_DrawNamePatch(0, 0, 0, "CREDIT", NULL, VPT_STRETCH);
       break;
     case shareware:
     case registered:
@@ -565,7 +559,7 @@ int epi;
 void M_DrawEpisode(void)
 {
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(54, 38, 0, "M_EPISOD", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(54, 38, 0, "M_EPISOD", NULL, VPT_STRETCH);
 }
 
 void M_Episode(int choice)
@@ -635,8 +629,8 @@ menu_t NewDef =
 void M_DrawNewGame(void)
 {
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(96, 14, 0, "M_NEWG", CR_DEFAULT, VPT_STRETCH);
-  V_DrawNamePatch(54, 38, 0, "M_SKILL",CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(96, 14, 0, "M_NEWG", NULL, VPT_STRETCH);
+  V_DrawNamePatch(54, 38, 0, "M_SKILL",NULL, VPT_STRETCH);
 }
 
 // CPhipps - make `New Game' restart the level in a netgame
@@ -755,7 +749,7 @@ void M_DrawLoad(void)
 
   //jff 3/15/98 use symbolic load position
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(72 ,LOADGRAPHIC_Y, 0, "M_LOADG", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(72 ,LOADGRAPHIC_Y, 0, "M_LOADG", NULL, VPT_STRETCH);
   for (i = 0 ; i < load_end ; i++)
     {
     M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -772,15 +766,15 @@ void M_DrawSaveLoadBorder(int x,int y)
   {
   int i;
   
-  V_DrawNamePatch(x-8, y+7, 0, "M_LSLEFT", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(x-8, y+7, 0, "M_LSLEFT", NULL, VPT_STRETCH);
   
   for (i = 0 ; i < 24 ; i++)
     {
-      V_DrawNamePatch(x, y+7, 0, "M_LSCNTR", CR_DEFAULT, VPT_STRETCH);
+      V_DrawNamePatch(x, y+7, 0, "M_LSCNTR", NULL, VPT_STRETCH);
       x += 8;
     }
 
-  V_DrawNamePatch(x, y+7, 0, "M_LSRGHT", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(x, y+7, 0, "M_LSRGHT", NULL, VPT_STRETCH);
   }
 
 //
@@ -912,7 +906,7 @@ void M_DrawSave(void)
 
   //jff 3/15/98 use symbolic load position
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(72, LOADGRAPHIC_Y, 0, "M_SAVEG", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(72, LOADGRAPHIC_Y, 0, "M_SAVEG", NULL, VPT_STRETCH);
   for (i = 0 ; i < load_end ; i++)
     {
     M_DrawSaveLoadBorder(LoadDef.x,LoadDef.y+LINEHEIGHT*i);
@@ -1031,10 +1025,10 @@ void M_DrawOptions(void)
 {
   // CPhipps - patch drawing updated
   // proff/nicolas 09/20/98 -- changed for hi-res
-  V_DrawNamePatch(108, 15, 0, "M_OPTTTL", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(108, 15, 0, "M_OPTTTL", NULL, VPT_STRETCH);
 
   V_DrawNamePatch(OptionsDef.x + 120, OptionsDef.y+LINEHEIGHT*messages, 0,
-		  msgNames[showMessages], CR_DEFAULT, VPT_STRETCH);
+		  msgNames[showMessages], NULL, VPT_STRETCH);
 
   M_DrawThermo(OptionsDef.x,OptionsDef.y+LINEHEIGHT*(scrnsize+1),
    9,screenSize);
@@ -1147,7 +1141,7 @@ menu_t SoundDef =
 void M_DrawSound(void)
   {
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(60, 38, 0, "M_SVOL", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(60, 38, 0, "M_SVOL", NULL, VPT_STRETCH);
 
   M_DrawThermo(SoundDef.x,SoundDef.y+LINEHEIGHT*(sfx_vol+1),16,snd_SfxVolume);
 
@@ -1244,7 +1238,7 @@ void M_DrawMouse(void)
   int mhmx,mvmx; /* jff 4/3/98 clamp drawn position    99max mead */
 
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(60, 38, 0, "M_MSENS", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(60, 38, 0, "M_MSENS", NULL, VPT_STRETCH);
 
   //jff 4/3/98 clamp horizontal sensitivity display
   mhmx = mouseSensitivity_horiz>99? 99 : mouseSensitivity_horiz; /*mead*/
@@ -1748,7 +1742,7 @@ menu_t ChatStrDef =                                         // phares 4/10/98
 void M_DrawSetup(void)
   {
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(124, 15, 0, "M_SETUP", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(124, 15, 0, "M_SETUP", NULL, VPT_STRETCH);
   }
 
 /////////////////////////////
@@ -1830,7 +1824,7 @@ static void M_DrawItem(const setup_menu_t* s)
     // CPhipps - Patch drawing updated, reformatted
 
     V_DrawNamePatch(x, y, 0, ResetButtonName[(flags & (S_HILITE|S_SELECT)) ? whichSkull : 0], 
-		    CR_DEFAULT, VPT_STRETCH);
+		    NULL, VPT_STRETCH);
 
   // Draw the item string
 
@@ -1958,7 +1952,7 @@ static void M_DrawSetting(const setup_menu_t* s)
     ch = (byte) *(s->m_var1);
     if (ch == 0) // don't show this item in automap mode
       // CPhipps - patch drawing updated
-      V_DrawNamePatch(x+1, y, 0, "M_PALNO", CR_DEFAULT, VPT_STRETCH);
+      V_DrawNamePatch(x+1, y, 0, "M_PALNO", NULL, VPT_STRETCH);
     else {
       ptr = colorblock;
       for (i = 0 ; i < CHIP_SIZE*CHIP_SIZE ; i++)
@@ -2435,7 +2429,7 @@ void M_DrawKeybnd(void)
 
   M_DrawBackground("FLOOR4_6"); // Draw background
   // proff/nicolas 09/20/98 -- changed for hi-res
-  V_DrawNamePatch(84, 2, 0, "M_KEYBND", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(84, 2, 0, "M_KEYBND", NULL, VPT_STRETCH);
   M_DrawInstructions();
   M_DrawScreenItems(current_setup_menu);
 
@@ -2526,7 +2520,7 @@ void M_DrawWeapons(void)
 
   M_DrawBackground("FLOOR4_6"); // Draw background
   // proff/nicolas 09/20/98 -- changed for hi-res
-  V_DrawNamePatch(109, 2, 0, "M_WEAP", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(109, 2, 0, "M_WEAP", NULL, VPT_STRETCH);
   M_DrawInstructions();
   M_DrawScreenItems(current_setup_menu);
 
@@ -2623,7 +2617,7 @@ void M_DrawStatusHUD(void)
 
   M_DrawBackground("FLOOR4_6"); // Draw background
   // proff/nicolas 09/20/98 -- changed for hi-res
-  V_DrawNamePatch(59, 2, 0, "M_STAT", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(59, 2, 0, "M_STAT", NULL, VPT_STRETCH);
   M_DrawInstructions();
   M_DrawScreenItems(current_setup_menu);
 
@@ -2750,7 +2744,7 @@ static void M_DrawColPal(void) // CPhipps - static, void, formatting
 
   // proff/nicolas 09/20/98 -- changed for hi-res
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(COLORPALXORIG-5, COLORPALYORIG-5, 0, "M_COLORS", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(COLORPALXORIG-5, COLORPALYORIG-5, 0, "M_COLORS", NULL, VPT_STRETCH);
 
   // Draw the cursor around the paint chip
   // (cpx,cpy) is the upper left-hand corner of the paint chip
@@ -2777,7 +2771,7 @@ void M_DrawAutoMap(void)
 
   M_DrawBackground("FLOOR4_6"); // Draw background
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(109, 2, 0, "M_AUTO", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(109, 2, 0, "M_AUTO", NULL, VPT_STRETCH);
   M_DrawInstructions();
   M_DrawScreenItems(current_setup_menu);
 
@@ -2856,7 +2850,7 @@ void M_DrawEnemy(void)
 
   M_DrawBackground("FLOOR4_6"); // Draw background
   // proff/nicolas 09/20/98 -- changed for hi-res
-  V_DrawNamePatch(114, 2, 0, "M_ENEM", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(114, 2, 0, "M_ENEM", NULL, VPT_STRETCH);
   M_DrawInstructions();
   M_DrawScreenItems(current_setup_menu);
 
@@ -2935,7 +2929,7 @@ void M_DrawMessages(void)
   inhelpscreens = true;
   M_DrawBackground("FLOOR4_6"); // Draw background
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(103, 2, 0, "M_MESS", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(103, 2, 0, "M_MESS", NULL, VPT_STRETCH);
   M_DrawInstructions();
   M_DrawScreenItems(current_setup_menu);
   if (default_verify)
@@ -3010,7 +3004,7 @@ void M_DrawChatStrings(void)
   inhelpscreens = true;
   M_DrawBackground("FLOOR4_6"); // Draw background
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(83, 2, 0, "M_CHAT", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(83, 2, 0, "M_CHAT", NULL, VPT_STRETCH);
   M_DrawInstructions();
   M_DrawScreenItems(current_setup_menu);
 
@@ -3197,7 +3191,7 @@ void M_DrawExtHelp(void)
   namebfr[4] = extended_help_index/10 + 0x30;
   namebfr[5] = extended_help_index%10 + 0x30;
   // CPhipps - patch drawing updated
-  V_DrawNamePatch(0, 0, 0, namebfr, CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(0, 0, 0, namebfr, NULL, VPT_STRETCH);
 }
 
 //
@@ -3390,7 +3384,7 @@ void M_DrawMenuString(int cx, int cy, int color)
       cx += SPACEWIDTH;    // space
       continue;
       }
-    w = SHORT (hu_font[c].width);
+    w = SHORT (hu_font[c]->width);
     if (cx + w > SCREENWIDTH)
       break;
     
@@ -3398,7 +3392,7 @@ void M_DrawMenuString(int cx, int cy, int color)
     // desired color, colrngs[color]
     
     // CPhipps - patch drawing updated
-    V_DrawNumPatch(cx, cy, 0, hu_font[c].lumpnum, color, VPT_STRETCH | VPT_TRANS); 
+    V_DrawMemPatch(cx, cy, 0, hu_font[c], colrngs[color], VPT_STRETCH | VPT_TRANS); 
     cx += w - 1; // The screen is cramped, so trim one unit from each
                  // character so they butt up against each other.
     }
@@ -3421,7 +3415,7 @@ int M_GetPixelWidth(char* ch)
       len += SPACEWIDTH;   // space
       continue;
       }
-    len += SHORT (hu_font[c].width);
+    len += SHORT (hu_font[c]->width);
     len--; // adjust so everything fits
     }
   len++; // replace what you took away on the last char only
@@ -4603,7 +4597,7 @@ void M_Drawer (void)
     y = 100 - M_StringHeight(messageString)/2;
     while(*(messageString+start))
       {
-      for (i = 0;(size_t)i < strlen(messageString+start);i++)
+      for (i = 0;i < strlen(messageString+start);i++)
         if ((messageString[start+i] == '\n') || (i == M_LINE_LEN-1))
           {
           memset(string,0,40);
@@ -4613,7 +4607,7 @@ void M_Drawer (void)
           break;
           }
     
-      if ((size_t)i == strlen(messageString+start))
+      if (i == strlen(messageString+start))
         {
         strcpy(string,messageString+start);
         start += i;
@@ -4621,7 +4615,7 @@ void M_Drawer (void)
     
       x = 160 - M_StringWidth(string)/2;
       M_WriteText(x,y,string);
-      y += SHORT(hu_font[0].height);
+      y += SHORT(hu_font[0]->height);
       }
     return;
     }
@@ -4642,7 +4636,7 @@ void M_Drawer (void)
     {
     if (currentMenu->menuitems[i].name[0])
       // CPhipps - patch drawing updated
-      V_DrawNamePatch(x, y, 0, currentMenu->menuitems[i].name, CR_DEFAULT, VPT_STRETCH);
+      V_DrawNamePatch(x, y, 0, currentMenu->menuitems[i].name, NULL, VPT_STRETCH);
     y += LINEHEIGHT;
     }
   
@@ -4650,7 +4644,7 @@ void M_Drawer (void)
 
   // CPhipps - patch drawing updated
   V_DrawNamePatch(x + SKULLXOFF, currentMenu->y - 5 + itemOn*LINEHEIGHT,0,
-		  skullName[whichSkull], CR_DEFAULT, VPT_STRETCH);
+		  skullName[whichSkull], NULL, VPT_STRETCH);
   }
 
 //
@@ -4737,18 +4731,18 @@ void M_DrawThermo(int x,int y,int thermWidth,int thermDot )
   thermWidth = (thermWidth > 200) ? 200 : thermWidth; //Clamp to 200 max
   horizScaler = (thermWidth > 23) ? (200 / thermWidth) : 8; //Dynamic range
   xx = x;
-  V_DrawNamePatch(xx, y, 0, "M_THERML", CR_DEFAULT, VPT_STRETCH);
+  V_DrawNamePatch(xx, y, 0, "M_THERML", NULL, VPT_STRETCH);
   xx += 8;
   for (i=0;i<thermWidth;i++)
     {
-    V_DrawNamePatch(xx, y, 0, "M_THERMM", CR_DEFAULT, VPT_STRETCH);
+    V_DrawNamePatch(xx, y, 0, "M_THERMM", NULL, VPT_STRETCH);
     xx += horizScaler;
     }
 
   xx += (8 - horizScaler); 	/* make the right end look even */
 
-  V_DrawNamePatch(xx, y, 0, "M_THERMR", CR_DEFAULT, VPT_STRETCH);
-  V_DrawNamePatch((x+8)+thermDot*horizScaler,y,0,"M_THERMO",CR_DEFAULT,VPT_STRETCH);
+  V_DrawNamePatch(xx, y, 0, "M_THERMR", NULL, VPT_STRETCH);
+  V_DrawNamePatch((x+8)+thermDot*horizScaler,y,0,"M_THERMO",NULL,VPT_STRETCH);
   }
 
 //
@@ -4759,7 +4753,7 @@ void M_DrawEmptyCell (menu_t* menu,int item)
   {
   // CPhipps - patch drawing updated
   V_DrawNamePatch(menu->x - 10, menu->y+item*LINEHEIGHT - 1, 0,
-		  "M_CELL1", CR_DEFAULT, VPT_STRETCH);
+		  "M_CELL1", NULL, VPT_STRETCH);
   }
 
 //
@@ -4770,7 +4764,7 @@ void M_DrawSelCell (menu_t* menu,int item)
   {
   // CPhipps - patch drawing updated
   V_DrawNamePatch(menu->x - 10, menu->y+item*LINEHEIGHT - 1, 0,
-		  "M_CELL2", CR_DEFAULT, VPT_STRETCH);
+		  "M_CELL2", NULL, VPT_STRETCH);
   }
 
 /////////////////////////////
@@ -4788,12 +4782,12 @@ int M_StringWidth(const char* string)
   int w = 0;
   int c;
   
-  for (i = 0;(size_t)i < strlen(string);i++) {
+  for (i = 0;i < strlen(string);i++) {
     c = toupper(string[i]) - HU_FONTSTART;
     if (c < 0 || c >= HU_FONTSIZE)
       w += 4;
     else
-      w += SHORT (hu_font[c].width);
+      w += SHORT (hu_font[c]->width);
   }
   
   return w;
@@ -4806,7 +4800,7 @@ int M_StringHeight(const char* string)
 {
   int i;
   int h;
-  int height = SHORT(hu_font[0].height);
+  int height = SHORT(hu_font[0]->height);
   
   h = height;
   for (i = 0;string[i];i++)            // killough 1/31/98
@@ -4845,12 +4839,12 @@ void M_WriteText (int x, int y, const char* string)
       continue;
     }
     
-    w = SHORT (hu_font[c].width);
+    w = SHORT (hu_font[c]->width);
     if (cx+w > SCREENWIDTH)
       break;
     // proff/nicolas 09/20/98 -- changed for hi-res
     // CPhipps - patch drawing updated
-    V_DrawNumPatch(cx, cy, 0, hu_font[c].lumpnum, CR_DEFAULT, VPT_STRETCH);
+    V_DrawMemPatch(cx, cy, 0, hu_font[c], NULL, VPT_STRETCH);
     cx+=w;
   }
 }
@@ -4952,3 +4946,260 @@ void M_Init (void)
 // End of General Routines
 //
 /////////////////////////////////////////////////////////////////////////////
+
+//----------------------------------------------------------------------------
+//
+// $Log: m_menu.c,v $
+// Revision 1.1  2000/05/04 08:10:03  proff_fs
+// Initial revision
+//
+// Revision 1.30  2000/05/01 17:50:35  Proff
+// made changes to compile with VisualC and SDL
+//
+// Revision 1.29  2000/04/29 16:15:01  cph
+// Revert new netgame stuff
+//
+// Revision 1.24  2000/03/17 20:50:30  cph
+// Commit mead's improved mouse stuff
+//
+// Revision 1.23  2000/02/26 19:17:27  cph
+// Pass buffer size to G_SaveGameName, minor tweaking
+//
+// Revision 1.22  1999/10/27 12:01:11  cphipps
+// Removed M_DrawBackground, point existing calls to new V_DrawBackground
+//
+// Revision 1.21  1999/10/12 13:01:12  cphipps
+// Changed header to GPL
+//
+// Revision 1.20  1999/07/20 16:42:36  cphipps
+// Allow quickload in netgames
+//
+// Revision 1.19  1999/05/14 20:44:35  cphipps
+// Add number keypad support to the in-game key config screen
+//
+// Revision 1.18  1999/03/26 11:24:33  cphipps
+// Add new automap mode keys to key bindings menus
+//
+// Revision 1.17  1999/03/24 09:46:16  cphipps
+// Remove redundant extern decl's
+// Add new mapcolor_me menu entry, remove the old mapcolor_plyr entries
+//
+// Revision 1.16  1999/03/13 10:10:26  cphipps
+// Modified for new automap mode variable
+//
+// Revision 1.15  1999/02/28 08:40:48  cphipps
+// Remove large number of needless I_GetTime references
+//
+// Revision 1.14  1999/01/13 10:45:26  cphipps
+// Change exit delay handling to new I_uSleep()
+// Remove i_video.h include :)
+//
+// Revision 1.13  1999/01/07 10:32:16  cphipps
+// Fix bad enum
+// Improve messy pointer casts
+//
+// Revision 1.12  1998/12/31 20:26:26  cphipps
+// New wad lump handling
+//
+// Revision 1.11  1998/12/31 11:07:15  cphipps
+// All V_Draw* function calls updated
+//
+// Revision 1.10  1998/12/27 15:45:06  cphipps
+// When New Game selected in a netgame, query then do a level restart insytead
+//
+// Revision 1.9  1998/12/24 20:48:10  cphipps
+// Change V_DrawBlock calls to V_DrawStretchedBlock
+// (fixes high-res menu problems)
+// Rewrote most of M_DrawDefVerify to render its dialog into a buffer and then blit it, so
+// it stretches properly
+//
+// Revision 1.8  1998/12/24 17:46:56  cphipps
+// Modify for new default_t format
+//
+// Revision 1.7  1998/12/24 11:05:54  cphipps
+// Fix buffer overrun in M_Drawer
+//
+// Revision 1.6  1998/12/19 11:46:16  cphipps
+// Allow savegame loading in a netgame
+// Modify M_LoadGame so no savegame filename parameter is passed
+//
+// Revision 1.5  1998/11/16 22:42:57  cphipps
+// Hi-res fixes
+//
+// Revision 1.4  1998/10/27 16:08:45  cphipps
+// *** empty log message ***
+//
+// Revision 1.3  1998/10/27 16:08:07  cphipps
+// Logical output routine used
+//
+// Revision 1.2  1998/10/16 20:11:32  cphipps
+// Massive reformatting
+// Added static o many functions
+// Made string structure members const to prevent SIGSEGV's on protected
+// mode systems
+// Added const to many functions parameters to allow this
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.3  1998/09/12 19:36:11  cphipps
+// Cured a SIGSEGV by strdup()ing a constant string which was being written to
+//
+// Revision 1.54  1998/05/28  05:27:13  killough
+// Fix some load / save / end game handling r.w.t. demos
+//
+// Revision 1.53  1998/05/16  09:17:09  killough
+// Make loadgame checksum friendlier
+//
+// Revision 1.52  1998/05/05  15:34:55  phares
+// Documentation and Reformatting changes
+//
+// Revision 1.51  1998/05/03  21:55:58  killough
+// Provide minimal required headers and decls
+//
+// Revision 1.50  1998/05/01  21:35:06  killough
+// Fix status bar update after leaving help screens
+//
+// Revision 1.49  1998/04/24  23:51:51  thldrmn
+// Reinstated gamma correction deh variables
+//
+// Revision 1.48  1998/04/23  13:07:05  jim
+// Add exit line to automap
+//
+// Revision 1.47  1998/04/22  13:46:02  phares
+// Added Setup screen Reset to Defaults
+//
+// Revision 1.46  1998/04/19  01:19:42  killough
+// Tidy up last fix's code
+//
+// Revision 1.45  1998/04/17  14:46:33  killough
+// fix help showstopper
+//
+// Revision 1.44  1998/04/17  10:28:46  killough
+// Add traditional_menu
+//
+// Revision 1.43  1998/04/14  11:29:50  phares
+// Added demorecording as a condition for delaying config change
+//
+// Revision 1.42  1998/04/14  10:55:24  phares
+// Recoil, Bobbing, Monsters Remember changes in Setup now take effect immediately
+//
+// Revision 1.41  1998/04/13  21:36:24  phares
+// Cemented ESC and F1 in place
+//
+// Revision 1.40  1998/04/12  22:55:23  phares
+// Remaining 3 Setup screens
+//
+// Revision 1.39  1998/04/06  05:01:04  killough
+// set inhelpscreens=true for status bar update, rearrange menu yet again
+//
+// Revision 1.38  1998/04/05  00:50:59  phares
+// Joystick support, Main Menu re-ordering
+//
+// Revision 1.37  1998/04/03  19:18:31  phares
+// Automap Palette work, slot 0 = disable, 247 = BLACK
+//
+// Revision 1.36  1998/04/03  14:45:28  jim
+// Fixed automap disables at 0, mouse sens unbounded
+//
+// Revision 1.35  1998/04/01  15:34:09  phares
+// Added Automap Setup Screen, fixed Seg Viol in Setup Menus
+//
+// Revision 1.34  1998/03/31  23:07:40  phares
+// Fixed bug in key binding screen causing seg viol
+//
+// Revision 1.33  1998/03/31  10:40:06  killough
+// Fix incorrect order of quit message
+//
+// Revision 1.32  1998/03/31  01:07:59  phares
+// Initial Setup screens and Extended HELP screens
+//
+// Revision 1.31  1998/03/28  05:32:25  jim
+// Text enabling changes for DEH
+//
+// Revision 1.30  1998/03/24  15:59:36  jim
+// Added default_skill parameter to config file
+//
+// Revision 1.29  1998/03/23  15:21:24  phares
+// Start of setup menus
+//
+// Revision 1.28  1998/03/23  03:22:00  killough
+// Use G_SaveGameName for consistent savegame naming
+//
+// Revision 1.27  1998/03/16  12:31:11  killough
+// Remember savegame slot when loading
+//
+// Revision 1.26  1998/03/15  14:41:15  jim
+// added two more save/load slots
+//
+// Revision 1.25  1998/03/11  17:48:10  phares
+// New cheats, clean help code, friction fix
+//
+// Revision 1.24  1998/03/10  07:07:25  jim
+// Fixed display glitch in HUD cycle
+//
+// Revision 1.23  1998/03/09  18:29:06  phares
+// Created separately bound automap and menu keys
+//
+// Revision 1.22  1998/03/09  07:36:45  killough
+// Some #ifdef'ed help screen fixes, saved autorun status
+//
+// Revision 1.21  1998/03/05  11:29:26  jim
+// Fixed mis-merge in m_menu.c
+//
+// Revision 1.20  1998/03/05  01:12:34  jim
+// Added distributed hud to key_hud function
+//
+// Revision 1.19  1998/03/04  22:15:51  phares
+// Included missing externs
+//
+// Revision 1.18  1998/03/04  21:02:20  phares
+// Dynamic HELP screen
+//
+// Revision 1.17  1998/03/04  11:54:56  jim
+// Fix fullscreen bug in F5 key
+//
+// Revision 1.16  1998/03/02  15:34:06  jim
+// Added Rand's HELP screen as lump and loaded and displayed it
+//
+// Revision 1.15  1998/02/24  10:52:13  jim
+// Fixed missing changes in m_menu.c
+//
+// Revision 1.14  1998/02/24  09:13:01  phares
+// Corrected key_detail->key_hud oversight
+//
+// Revision 1.13  1998/02/24  08:46:00  phares
+// Pushers, recoil, new friction, and over/under work
+//
+// Revision 1.12  1998/02/24  04:14:08  jim
+// Added double keys to status
+//
+// Revision 1.11  1998/02/23  14:21:04  jim
+// Merged HUD stuff, fixed p_plats.c to support elevators again
+//
+// Revision 1.10  1998/02/23  04:35:44  killough
+// Fix help screens and broken HUD control
+//
+// Revision 1.8  1998/02/19  16:54:40  jim
+// Optimized HUD and made more configurable
+//
+// Revision 1.7  1998/02/18  11:56:03  jim
+// Fixed issues with HUD and reduced screen size
+//
+// Revision 1.5  1998/02/17  06:11:59  killough
+// Support basesavegame path to savegames
+//
+// Revision 1.4  1998/02/15  02:47:50  phares
+// User-defined keys
+//
+// Revision 1.3  1998/02/02  13:38:15  killough
+// Add mouse sensitivity menu bar lumps
+//
+// Revision 1.2  1998/01/26  19:23:47  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:58  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

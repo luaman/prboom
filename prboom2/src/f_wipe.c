@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: f_wipe.c,v 1.3 2000/05/09 21:45:36 proff_fs Exp $
+ * $Id: f_wipe.c,v 1.1 2000/05/04 08:01:33 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -33,11 +30,7 @@
  *-----------------------------------------------------------------------------
  */
 
-static const char rcsid[] = "$Id: f_wipe.c,v 1.3 2000/05/09 21:45:36 proff_fs Exp $";
-
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
+static const char rcsid[] = "$Id: f_wipe.c,v 1.1 2000/05/04 08:01:33 proff_fs Exp $";
 
 #include "z_zone.h"
 #include "doomdef.h"
@@ -191,3 +184,37 @@ int wipe_ScreenWipe(int x, int y, int width, int height, int ticks)
     }
   return !go;
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: f_wipe.c,v $
+// Revision 1.1  2000/05/04 08:01:33  proff_fs
+// Initial revision
+//
+// Revision 1.5  1999/10/12 13:01:10  cphipps
+// Changed header to GPL
+//
+// Revision 1.4  1999/08/26 21:52:11  cphipps
+// Removed old alternate wipe types (ColorXForm stuff), unused
+// Macroise screen numbers for the stored screens
+// Use standard V_CopyRect to move screens around
+//
+// Revision 1.3  1998/12/30 22:07:48  cphipps
+// Updated for new patch drawing
+//
+// Revision 1.2  1998/12/28 21:25:20  cphipps
+// Allocate screens for wipe storage as needed
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.3  1998/05/03  22:11:24  killough
+// beautification
+//
+// Revision 1.2  1998/01/26  19:23:16  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:02:54  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

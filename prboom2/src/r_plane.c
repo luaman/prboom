@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: r_plane.c,v 1.6 2000/05/12 21:31:20 proff_fs Exp $
+ * $Id: r_plane.c,v 1.1 2000/05/04 08:16:18 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -45,14 +42,10 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include "z_zone.h"  /* memory allocation wrappers -- killough */
 
 static const char
-rcsid[] = "$Id: r_plane.c,v 1.6 2000/05/12 21:31:20 proff_fs Exp $";
+rcsid[] = "$Id: r_plane.c,v 1.1 2000/05/04 08:16:18 proff_fs Exp $";
 
 #include "doomstat.h"
 #include "w_wad.h"
@@ -138,7 +131,7 @@ static void R_MapPlane(int y, int x1, int x2)
   unsigned index;
 
 #ifdef RANGECHECK
-  if (x2 < x1 || x1<0 || x2>=viewwidth || (unsigned)y>(unsigned)viewheight)
+  if (x2 < x1 || x1<0 || x2>=viewwidth || (unsigned)y>viewheight)
     I_Error ("R_MapPlane: %i, %i at %i",x1,x2,y);
 #endif
 
@@ -175,9 +168,7 @@ static void R_MapPlane(int y, int x1, int x2)
   ds_x1 = x1;
   ds_x2 = x2;
 
-#ifndef GL_DOOM
   R_DrawSpan();
-#endif
 }
 
 //
@@ -256,7 +247,7 @@ visplane_t *R_FindPlane(fixed_t height, int picnum, int lightlevel,
   check->height = height;
   check->picnum = picnum;
   check->lightlevel = lightlevel;
-  check->minx = viewwidth; // Was SCREENWIDTH -- killough 11/98
+  check->minx = SCREENWIDTH;
   check->maxx = -1;
   check->xoffs = xoffs;               // killough 2/28/98: Save offsets
   check->yoffs = yoffs;
@@ -340,48 +331,45 @@ static void R_DoDrawPlane(visplane_t *pl)
       
       an = viewangle;
       
-      if (pl->picnum & PL_SKYFLAT)
-      {
-	      // Sky Linedef
-	      const line_t *l = &lines[pl->picnum & ~PL_SKYFLAT];
-	      
-	      // Sky transferred from first sidedef
-	      const side_t *s = *l->sidenum + sides;
-	      
-	      // Texture comes from upper texture of reference sidedef
-	      texture = texturetranslation[s->toptexture];
-	      
-	      // Horizontal offset is turned into an angle offset,
-	      // to allow sky rotation as well as careful positioning.
-	      // However, the offset is scaled very small, so that it
-	      // allows a long-period of sky rotation.
-	      
-	      an += s->textureoffset;
-	      
-	      // Vertical offset allows careful sky positioning.
-	      
-	      dc_texturemid = s->rowoffset - 28*FRACUNIT;
-	      
-	      // We sometimes flip the picture horizontally.
-	      //
-	      // Doom always flipped the picture, so we make it optional,
-	      // to make it easier to use the new feature, while to still
-	      // allow old sky textures to be used.
-	      
-	      flip = l->special==272 ? 0u : ~0u;
-      }
-      else
-      {    // Normal Doom sky, only one allowed per level
-	      dc_texturemid = skytexturemid;    // Default y-offset
-	      texture = skytexture;             // Default texture
-	      flip = 0;                         // Doom flips it
+      if (pl->picnum & PL_SKYFLAT) { 
+	// Sky Linedef
+	const line_t *l = &lines[pl->picnum & ~PL_SKYFLAT];
+	
+	// Sky transferred from first sidedef
+	const side_t *s = *l->sidenum + sides;
+	
+	// Texture comes from upper texture of reference sidedef
+	texture = texturetranslation[s->toptexture];
+	
+	// Horizontal offset is turned into an angle offset,
+	// to allow sky rotation as well as careful positioning.
+	// However, the offset is scaled very small, so that it
+	// allows a long-period of sky rotation.
+	
+	an += s->textureoffset;
+	
+	// Vertical offset allows careful sky positioning.
+	
+	dc_texturemid = s->rowoffset - 28*FRACUNIT;
+	
+	// We sometimes flip the picture horizontally.
+	//
+	// Doom always flipped the picture, so we make it optional,
+	// to make it easier to use the new feature, while to still
+	// allow old sky textures to be used.
+	
+	flip = l->special==272 ? 0u : ~0u;
+      } else {    // Normal Doom sky, only one allowed per level
+	dc_texturemid = skytexturemid;    // Default y-offset
+	texture = skytexture;             // Default texture
+	flip = 0;                         // Doom flips it
       }
       // Sky is always drawn full bright, i.e. colormaps[0] is used.
       // Because of this hack, sky is not affected by INVUL inverse mapping.
       
       if (!(dc_colormap = fixedcolormap)) 
 	dc_colormap = fullcolormap;          // killough 3/20/98
-      //dc_texturemid = skytexturemid;
+      dc_texturemid = skytexturemid;
       dc_texheight = textureheight[skytexture]>>FRACBITS; // killough
       // proff 09/21/98: Changed for high-res
       dc_iscale = FRACUNIT*200/viewheight;
@@ -436,3 +424,66 @@ void R_DrawPlanes (void)
     for (pl=visplanes[i]; pl; pl=pl->next, rendered_visplanes++)
       R_DoDrawPlane(pl);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: r_plane.c,v $
+// Revision 1.1  2000/05/04 08:16:18  proff_fs
+// Initial revision
+//
+// Revision 1.10  2000/05/01 14:37:33  Proff
+// changed abs to D_abs
+//
+// Revision 1.9  1999/11/01 17:09:15  cphipps
+// Added lprintf.h (needed for RANGECHECK debugging I_Error calls)
+//
+// Revision 1.8  1999/10/12 13:01:14  cphipps
+// Changed header to GPL
+//
+// Revision 1.7  1999/06/17 10:08:45  cphipps
+// Keep track of visplanes rendered
+//
+// Revision 1.6  1999/02/03 08:48:59  cphipps
+// Fix sky colourmap fix (I got the code from MBF wrong)
+//
+// Revision 1.5  1999/02/02 09:16:58  cphipps
+// Add MBF enhanced skies support
+//
+// Revision 1.4  1998/12/31 22:48:47  cphipps
+// New wad lump handling
+//
+// Revision 1.3  1998/11/17 12:04:41  cphipps
+// Hi-res changes
+//
+// Revision 1.2  1998/10/16 21:48:36  cphipps
+// Change do_draw_plane to R_DoDrawPlane to match global naming convention
+// Remove hanging else's
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.8  1998/05/03  23:09:53  killough
+// Fix #includes at the top
+//
+// Revision 1.7  1998/04/27  01:48:31  killough
+// Program beautification
+//
+// Revision 1.6  1998/03/23  03:38:26  killough
+// Use 'fullcolormap' for fully-bright F_SKY1
+//
+// Revision 1.5  1998/03/02  11:47:13  killough
+// Add support for general flats xy offsets
+//
+// Revision 1.4  1998/02/09  03:16:03  killough
+// Change arrays to use MAX height/width
+//
+// Revision 1.3  1998/02/02  13:28:40  killough
+// performance tuning
+//
+// Revision 1.2  1998/01/26  19:24:45  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:03  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

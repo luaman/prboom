@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: hu_lib.c,v 1.3 2000/05/09 21:45:36 proff_fs Exp $
+ * $Id: hu_lib.c,v 1.1 2000/05/04 08:02:29 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -33,7 +30,7 @@
  */
 
 static const char
-rcsid[] = "$Id: hu_lib.c,v 1.3 2000/05/09 21:45:36 proff_fs Exp $";
+rcsid[] = "$Id: hu_lib.c,v 1.1 2000/05/04 08:02:29 proff_fs Exp $";
 
 #include "doomdef.h"
 #include "doomstat.h"
@@ -89,14 +86,14 @@ void HUlib_clearTextLine(hu_textline_t* t)
 // Returns nothing
 //
 void HUlib_initTextLine(hu_textline_t* t, int x, int y,
-			const patchnum_t* f, int sc, int cm  )
+			const patch_t** f, int sc, const char *cr  )
   //jff 2/16/98 add color range parameter
 {
   t->x = x;
   t->y = y;
   t->f = f;
   t->sc = sc;
-  t->cm = cm;
+  t->cr = cr;
   HUlib_clearTextLine(t);
 }
 
@@ -165,7 +162,7 @@ void HUlib_drawTextLine
   int     w;
   int     x;
   unsigned char c;
-  int oc = l->cm; //jff 2/17/98 remember default color
+  const char *oc = l->cr; //jff 2/17/98 remember default color
   int y = l->y;           // killough 1/18/98 -- support multiple lines
 
   // draw the new stuff
@@ -182,16 +179,16 @@ void HUlib_drawTextLine
     {                    //jff 3/26/98 changed to actual escape char
       if (++i<l->len)
         if (l->l[i]>='0' && l->l[i]<='9')
-          l->cm = l->l[i]-'0';
+          l->cr = colrngs[l->l[i]-'0'];
     }
     else  if (c != ' ' && c >= l->sc && c <= 127)
     {
-      w = SHORT(l->f[c - l->sc].width);
+      w = SHORT(l->f[c - l->sc]->width);
       if (x+w > SCREENWIDTH)
         break;
       // killough 1/18/98 -- support multiple lines:
       // CPhipps - patch drawing updated
-      V_DrawNumPatch(x, y, FG, l->f[c - l->sc].lumpnum, l->cm, VPT_TRANS | VPT_STRETCH);
+      V_DrawMemPatch(x, y, FG, l->f[c - l->sc], l->cr, VPT_TRANS);
       x += w;
     }
     else
@@ -201,14 +198,14 @@ void HUlib_drawTextLine
       break;
     }
   }
-  l->cm = oc; //jff 2/17/98 restore original color
+  l->cr = oc; //jff 2/17/98 restore original color
 
   // draw the cursor if requested
-  if (drawcursor && x + SHORT(l->f['_' - l->sc].width) <= SCREENWIDTH)
+  if (drawcursor && x + SHORT(l->f['_' - l->sc]->width) <= SCREENWIDTH)
   {
     // killough 1/18/98 -- support multiple lines
     // CPhipps - patch drawing updated
-    V_DrawNumPatch(x, y, FG, l->f['_' - l->sc].lumpnum, CR_DEFAULT, VPT_NONE | VPT_STRETCH);
+    V_DrawMemPatch(x, y, FG, l->f['_' - l->sc], NULL, VPT_NONE);
   }
 }
 
@@ -233,7 +230,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 
   if (!(automapmode & am_active) && viewwindowx && l->needsupdate)
   {
-    lh = SHORT(l->f[0].height) + 1;
+    lh = SHORT(l->f[0]->height) + 1;
     for (y=l->y,yoffset=y*SCREENWIDTH ; y<l->y+lh ; y++,yoffset+=SCREENWIDTH)
       {
       if (y < viewwindowy || y >= viewwindowy + viewheight)
@@ -271,9 +268,9 @@ void HUlib_initSText
   int   x,
   int   y,
   int   h,
-  const patchnum_t* font,
+  const patch_t** font,
   int   startchar,
-  int cm,       //jff 2/16/98 add color range parameter
+  const char *cr,       //jff 2/16/98 add color range parameter
   boolean*  on )
 {
 
@@ -288,10 +285,10 @@ void HUlib_initSText
     (
       &s->l[i],
       x,
-      y - i*(SHORT(font[0].height)+1),
+      y - i*(SHORT(font[0]->height)+1),
       font,
       startchar,
-      cm
+      cr
     );
 }
 
@@ -408,8 +405,8 @@ void HUlib_eraseSText(hu_stext_t* s)
 // Returns nothing
 //
 void HUlib_initMText(hu_mtext_t *m, int x, int y, int w, int h,
-		     const patchnum_t* font, int startchar, int cm,
-		     const patchnum_t* bgfont, boolean *on)
+		     const patch_t** font, int startchar, const char *cr,
+		     const patch_t** bgfont, boolean *on)
 {
   int i;
 
@@ -431,7 +428,7 @@ void HUlib_initMText(hu_mtext_t *m, int x, int y, int w, int h,
       y + (hud_list_bgon? i+1 : i)*HU_REFRESHSPACING,
       font,
       startchar,
-      cm
+      cr
     );
   }
 }
@@ -491,34 +488,34 @@ void HUlib_drawMBg
   int y,
   int w,
   int h,
-  const patchnum_t* bgp
+  const patch_t** bgp
 )
 {
-  int xs = bgp[0].width;
-  int ys = bgp[0].height;
+  int xs = bgp[0]->width;
+  int ys = bgp[0]->height;
   int i,j;
 
   // CPhipps - patch drawing updated
   // top rows
-  V_DrawNumPatch(x, y, FG, bgp[0].lumpnum, CR_DEFAULT, VPT_STRETCH);    // ul
+  V_DrawMemPatch(x, y, FG, bgp[0], NULL, VPT_NONE);    // ul
   for (j=x+xs;j<x+w-xs;j+=xs)           // uc
-    V_DrawNumPatch(j, y, FG, bgp[1].lumpnum, CR_DEFAULT, VPT_STRETCH);  
-  V_DrawNumPatch(j, y, FG, bgp[2].lumpnum, CR_DEFAULT, VPT_STRETCH);    // ur
+    V_DrawMemPatch(j, y, FG, bgp[1], NULL, VPT_NONE);  
+  V_DrawMemPatch(j, y, FG, bgp[2], NULL, VPT_NONE);    // ur
 
   // middle rows
   for (i=y+ys;i<y+h-ys;i+=ys)
   {
-    V_DrawNumPatch(x, i, FG, bgp[3].lumpnum, CR_DEFAULT, VPT_STRETCH);    // cl
+    V_DrawMemPatch(x, i, FG, bgp[3], NULL, VPT_NONE);    // cl
     for (j=x+xs;j<x+w-xs;j+=xs)           // cc
-      V_DrawNumPatch(j, i, FG, bgp[4].lumpnum, CR_DEFAULT, VPT_STRETCH);  
-    V_DrawNumPatch(j, i, FG, bgp[5].lumpnum, CR_DEFAULT, VPT_STRETCH);    // cr
+      V_DrawMemPatch(j, i, FG, bgp[4], NULL, VPT_NONE);  
+    V_DrawMemPatch(j, i, FG, bgp[5], NULL, VPT_NONE);    // cr
   }
 
   // bottom row
-  V_DrawNumPatch(x, i, FG, bgp[6].lumpnum, CR_DEFAULT, VPT_STRETCH);    // ll
+  V_DrawMemPatch(x, i, FG, bgp[6], NULL, VPT_NONE);    // ll
   for (j=x+xs;j<x+w-xs;j+=xs)           // lc
-    V_DrawNumPatch(j, i, FG, bgp[7].lumpnum, CR_DEFAULT, VPT_STRETCH);  
-  V_DrawNumPatch(j, i, FG, bgp[8].lumpnum, CR_DEFAULT, VPT_STRETCH);    // lr
+    V_DrawMemPatch(j, i, FG, bgp[7], NULL, VPT_NONE);  
+  V_DrawMemPatch(j, i, FG, bgp[8], NULL, VPT_NONE);    // lr
 }
 
 //
@@ -584,7 +581,7 @@ static void HUlib_eraseMBg(hu_mtext_t* m)
 
   if (!(automapmode & am_active) && viewwindowx)
   {
-    lh = SHORT(m->l[0].f[0].height) + 1;
+    lh = SHORT(m->l[0].f[0]->height) + 1;
     for (y=m->y,yoffset=y*SCREENWIDTH ; y<m->y+lh*(hud_msg_lines+2) ; y++,yoffset+=SCREENWIDTH)
     {
       if (y < viewwindowy || y >= viewwindowy + viewheight)
@@ -642,15 +639,15 @@ void HUlib_initIText
 ( hu_itext_t* it,
   int   x,
   int   y,
-  const patchnum_t* font,
+  const patch_t** font,
   int   startchar,
-  int cm,   //jff 2/16/98 add color range parameter
+  const char *cr,   //jff 2/16/98 add color range parameter
   boolean*  on )
 {
   it->lm = 0; // default left margin is start of text
   it->on = on;
   it->laston = true;
-  HUlib_initTextLine(&it->l, x, y, font, startchar, cm);
+  HUlib_initTextLine(&it->l, x, y, font, startchar, cr);
 }
 
 // The following deletion routines adhere to the left margin restriction
@@ -771,3 +768,72 @@ void HUlib_eraseIText(hu_itext_t* it)
   HUlib_eraseTextLine(&it->l);
   it->laston = *it->on;
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: hu_lib.c,v $
+// Revision 1.1  2000/05/04 08:02:29  proff_fs
+// Initial revision
+//
+// Revision 1.6  1999/10/12 13:01:10  cphipps
+// Changed header to GPL
+//
+// Revision 1.5  1999/03/07 22:18:06  cphipps
+// Changed for new automap mode variable
+//
+// Revision 1.4  1999/01/01 10:28:03  cphipps
+// Made many pointers into const*'s
+//
+// Revision 1.3  1998/12/31 13:37:51  cphipps
+// Patch drawing updated
+//
+// Revision 1.2  1998/10/16 21:58:44  cphipps
+// Changed a couple of functions to take const string parameters
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.1  1998/09/11 18:37:35  develop
+// Initial revision
+//
+// Revision 1.13  1998/05/11  10:13:26  jim
+// formatted/documented hu_lib
+//
+// Revision 1.12  1998/05/03  22:24:13  killough
+// Provide minimal headers at top; nothing else
+//
+// Revision 1.11  1998/04/29  09:24:33  jim
+// Fix compiler warning
+//
+// Revision 1.10  1998/04/28  15:53:46  jim
+// Fix message list bug in small screen mode
+//
+// Revision 1.9  1998/03/27  21:25:41  jim
+// Commented change of \ to ESC
+//
+// Revision 1.8  1998/03/26  20:06:24  jim
+// Fixed escape confusion in HU text drawer
+//
+// Revision 1.7  1998/02/26  22:58:33  jim
+// Added message review display to HUD
+//
+// Revision 1.6  1998/02/19  16:55:15  jim
+// Optimized HUD and made more configurable
+//
+// Revision 1.5  1998/02/18  00:59:01  jim
+// Addition of HUD
+//
+// Revision 1.4  1998/02/15  02:47:44  phares
+// User-defined keys
+//
+// Revision 1.3  1998/01/26  19:23:20  phares
+// First rev with no ^Ms
+//
+// Revision 1.2  1998/01/26  05:50:22  killough
+// Support more lines, and tab stops, in messages
+//
+// Revision 1.1.1.1  1998/01/19  14:02:55  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------

@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: am_map.c,v 1.6 2000/05/13 10:45:46 proff_fs Exp $
+ * $Id: am_map.c,v 1.1 2000/05/04 07:58:39 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -34,7 +31,7 @@
  */
 
 static const char rcsid[] =
-  "$Id: am_map.c,v 1.6 2000/05/13 10:45:46 proff_fs Exp $";
+  "$Id: am_map.c,v 1.1 2000/05/04 07:58:39 proff_fs Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -168,9 +165,9 @@ mline_t cheat_player_arrow[] =
 #define R (FRACUNIT)
 mline_t triangle_guy[] =
 {
-{ { (fixed_t)(-.867*R), (fixed_t)(-.5*R) }, { (fixed_t)( .867*R), (fixed_t)(-.5*R) } },
-{ { (fixed_t)( .867*R), (fixed_t)(-.5*R) }, { (fixed_t)(0      ), (fixed_t)(    R) } },
-{ { (fixed_t)(0      ), (fixed_t)(    R) }, { (fixed_t)(-.867*R), (fixed_t)(-.5*R) } }
+  { { -.867*R, -.5*R }, { .867*R, -.5*R } },
+  { { .867*R, -.5*R } , { 0, R } },
+  { { 0, R }, { -.867*R, -.5*R } }
 };
 #undef R
 #define NUMTRIANGLEGUYLINES (sizeof(triangle_guy)/sizeof(mline_t))
@@ -189,9 +186,9 @@ mline_t cross_mark[] =
 #define R (FRACUNIT)
 mline_t thintriangle_guy[] =
 {
-{ { (fixed_t)(-.5*R), (fixed_t)(-.7*R) }, { (fixed_t)(    R), (fixed_t)(    0) } },
-{ { (fixed_t)(    R), (fixed_t)(    0) }, { (fixed_t)(-.5*R), (fixed_t)( .7*R) } },
-{ { (fixed_t)(-.5*R), (fixed_t)( .7*R) }, { (fixed_t)(-.5*R), (fixed_t)(-.7*R) } }
+  { { -.5*R, -.7*R }, { R, 0 } },
+  { { R, 0 }, { -.5*R, .7*R } },
+  { { -.5*R, .7*R }, { -.5*R, -.7*R } }
 };
 #undef R
 #define NUMTHINTRIANGLEGUYLINES (sizeof(thintriangle_guy)/sizeof(mline_t))
@@ -248,7 +245,7 @@ static fixed_t old_m_x, old_m_y;
 static mpoint_t f_oldloc;
 
 // used by MTOF to scale from map-to-frame-buffer coords
-static fixed_t scale_mtof = (fixed_t)INITSCALEMTOF;
+static fixed_t scale_mtof = INITSCALEMTOF;
 // used by FTOM to scale from frame-buffer-to-map coords (=1/scale_mtof)
 static fixed_t scale_ftom;
 
@@ -719,7 +716,7 @@ boolean AM_Responder
     else if (ch == key_map_mark)
     {
       // Ty 03/27/98 - *not* externalized     
-#ifdef HAVE_SNPRINTF 
+#ifdef HAVE_snprintf 
       snprintf(buffer, sizeof(buffer), "%s %d", s_AMSTR_MARKEDSPOT, markpointnum);  
 #else
       sprintf(buffer, "%s %d", s_AMSTR_MARKEDSPOT, markpointnum);
@@ -1018,7 +1015,6 @@ boolean AM_clipMline
 // Passed the frame coordinates of line, and the color to be drawn
 // Returns nothing
 //
-#ifndef GL_DOOM
 void AM_drawFline
 ( fline_t*  fl,
   int   color )
@@ -1051,7 +1047,7 @@ void AM_drawFline
   }
 #endif
 
-#define PUTDOT(xx,yy,cc) V_PlotPixel(FB,xx,yy,(byte)cc)
+#define PUTDOT(xx,yy,cc) V_PlotPixel(FB,xx,yy,cc)
 
   dx = fl->b.x - fl->a.x;
   ax = 2 * (dx<0 ? -dx : dx);
@@ -1097,7 +1093,6 @@ void AM_drawFline
     }
   }
 }
-#endif
 
 //
 // AM_drawMline()
@@ -1122,11 +1117,7 @@ void AM_drawMline
     color=0;
 
   if (AM_clipMline(ml, &fl))
-#ifdef GL_DOOM
-    gld_DrawLine(fl.a.x, fl.a.y, fl.b.x, fl.b.y, (byte)color);
-#else
     AM_drawFline(&fl, color); // draws it on frame buffer using fb coords
-#endif
 }
 
 //
@@ -1249,8 +1240,8 @@ void AM_drawWalls(void)
     l.b.y = lines[i].v2->y;
 
     if (automapmode & am_rotate) {
-      AM_rotate(&l.a.x, &l.a.y, ANG90-plr->mo->angle, plr->mo->x, plr->mo->y);
-      AM_rotate(&l.b.x, &l.b.y, ANG90-plr->mo->angle, plr->mo->x, plr->mo->y);
+      AM_rotate(&l.a.x, &l.a.y, -plr->mo->angle+ANG90, plr->mo->x, plr->mo->y);
+      AM_rotate(&l.b.x, &l.b.y, -plr->mo->angle+ANG90, plr->mo->x, plr->mo->y);
     }
 
     // if line has been seen or IDDT has been used
@@ -1538,7 +1529,7 @@ void AM_drawPlayers(void)
     if (playeringame[i]) {
       fixed_t x = p->mo->x, y = p->mo->y;
       if (automapmode & am_rotate)
-	AM_rotate(&x, &y, ANG90-plr->mo->angle, plr->mo->x, plr->mo->y);
+	AM_rotate(&x, &y, -plr->mo->angle+ANG90, plr->mo->x, plr->mo->y);
 
       AM_drawLineCharacter (player_arrow, NUMPLYRLINES, 0, p->mo->angle,
 			    p->powers[pw_invisibility] ? 246 /* *close* to black */ 
@@ -1572,7 +1563,7 @@ void AM_drawThings
       fixed_t x = t->x, y = t->y;
 
       if (automapmode & am_rotate)
-	AM_rotate(&x, &y, ANG90-plr->mo->angle, plr->mo->x, plr->mo->y);
+	AM_rotate(&x, &y, -plr->mo->angle+ANG90, plr->mo->x, plr->mo->y);
 
       //jff 1/5/98 case over doomednum of thing being drawn
       if (mapcolor_rkey || mapcolor_ykey || mapcolor_bkey)
@@ -1659,7 +1650,7 @@ void AM_drawMarks(void)
       int j = i;
 
       if (automapmode & am_rotate)
-        AM_rotate(&fx, &fy, ANG90-plr->mo->angle, plr->mo->x, plr->mo->y);
+        AM_rotate(&fx, &fy, -plr->mo->angle+ANG90, plr->mo->x, plr->mo->y);
 
       fx = CXMTOF(fx); fy = CYMTOF(fy);
 
@@ -1673,7 +1664,7 @@ void AM_drawMarks(void)
 	  // cph - construct patch name and draw marker
 	  char namebuf[] = { 'A', 'M', 'M', 'N', 'U', 'M', '0'+d, 0 };
 	  
-          V_DrawNamePatch(fx, fy, FB, namebuf, CR_DEFAULT, VPT_NONE);
+          V_DrawNamePatch(fx, fy, FB, namebuf, NULL, VPT_NONE);
 	}
         fx -= w-1;          // killough 2/22/98: 1 space backwards
         j /= 10;
@@ -1700,12 +1691,7 @@ inline
 static void AM_drawCrosshair(int color)
 {
   // single point for now
-#ifdef GL_DOOM
-  gld_DrawLine((f_w/2)-1, (f_h/2), (f_w/2)+1, (f_h/2), (byte)color);
-  gld_DrawLine((f_w/2), (f_h/2)-1, (f_w/2), (f_h/2)+1, (byte)color);
-#else
-  V_PlotPixel(FB, f_w/2, f_h/2, (byte)color);
-#endif
+  V_PlotPixel(FB, f_w/2, f_h/2, color);
 }
 
 //
@@ -1721,7 +1707,7 @@ void AM_Drawer (void)
   if (!(automapmode & am_active)) return;
 
   if (!(automapmode & am_overlay)) // cph - If not overlay mode, clear background for the automap
-    V_FillRect(FB, f_x, f_y, f_w, f_h, (byte)mapcolor_back); //jff 1/5/98 background default color
+    V_FillRect(FB, f_x, f_y, f_w, f_h, mapcolor_back); //jff 1/5/98 background default color
   if (automapmode & am_grid)
     AM_drawGrid(mapcolor_grid);      //jff 1/7/98 grid default color
   AM_drawWalls();
@@ -1734,3 +1720,145 @@ void AM_Drawer (void)
 
   V_MarkRect(f_x, f_y, f_w, f_h);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: am_map.c,v $
+// Revision 1.1  2000/05/04 07:58:39  proff_fs
+// Initial revision
+//
+// Revision 1.21  2000/05/01 17:50:33  Proff
+// made changes to compile with VisualC and SDL
+//
+// Revision 1.20  2000/05/01 15:16:47  Proff
+// added __inline for VisualC
+//
+// Revision 1.19  2000/03/14 18:59:38  cph
+// Clean sprintfs out
+//
+// Revision 1.18  1999/12/22 19:46:40  cphipps
+// Fix rotation of automap marks
+//
+// Revision 1.17  1999/10/12 13:01:09  cphipps
+// Changed header to GPL
+//
+// Revision 1.16  1999/08/31 19:46:06  cphipps
+// Removed references to old viewactive variable
+//
+// Revision 1.15  1999/08/30 14:49:49  cphipps
+// Made to use V_* drawing functions instead of directly accessing the
+// display buffer
+// Removed some redundant variables
+//
+// Revision 1.14  1999/03/26 11:09:35  cphipps
+// Made all automap mode stuff part of the automapmode_e enum
+// Changed all followmode and automap_grid references for that
+//
+// Revision 1.13  1999/03/24 09:51:27  cphipps
+// Initialise the mapcolor_plyr[] array, as it is no longer in the config file
+//
+// Revision 1.12  1999/03/23 20:57:17  cphipps
+// Fix player arrow locations on rotated automap
+// Fix player arrow colours
+// Code tidying in AM_drawPlayers()
+//
+// Revision 1.11  1999/03/13 10:18:54  cphipps
+// Made automap rotate in only the right modes
+//
+// Revision 1.10  1999/03/07 22:15:51  cphipps
+// Automap with working rotation and overlay
+//
+// Revision 1.9  1999/02/17 21:20:13  cphipps
+// Fix bug with drawing automap marks >=10
+//
+// Revision 1.8  1999/02/08 08:46:48  cphipps
+// Use status bar height from st_stuff.h
+//
+// Revision 1.7  1999/01/25 15:47:24  cphipps
+// Use new limits.h macros instead of depreciated values.h macros
+//
+// Revision 1.6  1998/12/31 20:32:11  cphipps
+// Mark numbers are no longer cached statically
+// Instead V_DrawNamePatch is used
+//
+// Revision 1.5  1998/12/31 11:09:55  cphipps
+// Patch drawing updated
+//
+// Revision 1.4  1998/10/27 20:51:16  cphipps
+// Rmove ^M's
+//
+// Revision 1.3  1998/10/27 12:18:50  cphipps
+// Replace by Boom v2.02 code
+//
+// Revision 1.25  1998/09/07  20:05:44  jim
+// Added logical output routine
+//
+// Revision 1.24  1998/05/10  12:05:24  jim
+// formatted/documented am_map
+//
+// Revision 1.23  1998/05/03  22:13:49  killough
+// Provide minimal headers at top; no other changes
+//
+// Revision 1.22  1998/04/23  13:06:53  jim
+// Add exit line to automap
+//
+// Revision 1.21  1998/04/16  16:16:56  jim
+// Fixed disappearing marks after new level
+//
+// Revision 1.20  1998/04/03  14:45:17  jim
+// Fixed automap disables at 0, mouse sens unbounded
+//
+// Revision 1.19  1998/03/28  05:31:40  jim
+// Text enabling changes for DEH
+//
+// Revision 1.18  1998/03/23  03:06:22  killough
+// I wonder
+//
+// Revision 1.17  1998/03/15  14:36:46  jim
+// fixed secrets transfer bug in automap
+//
+// Revision 1.16  1998/03/10  07:06:21  jim
+// Added secrets on automap after found only option
+//
+// Revision 1.15  1998/03/09  18:29:22  phares
+// Created separately bound automap and menu keys
+//
+// Revision 1.14  1998/03/02  11:22:30  killough
+// change grid to automap_grid and make external
+//
+// Revision 1.13  1998/02/23  04:08:11  killough
+// Remove limit on automap marks, save them in savegame
+//
+// Revision 1.12  1998/02/17  22:58:40  jim
+// Fixed bug of vanishinb secret sectors in automap
+//
+// Revision 1.11  1998/02/15  03:12:42  phares
+// Jim's previous comment: Fixed bug in automap from mistaking framebuffer index for mark color
+//
+// Revision 1.10  1998/02/15  02:47:33  phares
+// User-defined keys
+//
+// Revision 1.8  1998/02/09  02:50:13  killough
+// move ddt cheat to st_stuff.c and some cleanup
+//
+// Revision 1.7  1998/02/02  22:16:31  jim
+// Fixed bug in automap that showed secret lines
+//
+// Revision 1.6  1998/01/26  20:57:54  phares
+// Second test of checkin/checkout
+//
+// Revision 1.5  1998/01/26  20:28:15  phares
+// First checkin/checkout script test
+//
+// Revision 1.4  1998/01/26  19:23:00  phares
+// First rev with no ^Ms
+//
+// Revision 1.3  1998/01/24  11:21:25  jim
+// Changed disables in automap to -1 and -2 (nodraw)
+//
+// Revision 1.1.1.1  1998/01/19  14:02:53  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------
+

@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: p_sight.c,v 1.5 2000/05/13 09:24:59 cph Exp $
+ * $Id: p_sight.c,v 1.1 2000/05/04 08:13:46 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -33,9 +30,8 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: p_sight.c,v 1.5 2000/05/13 09:24:59 cph Exp $";
+rcsid[] = "$Id: p_sight.c,v 1.1 2000/05/04 08:13:46 proff_fs Exp $";
 
-#include "doomstat.h"
 #include "r_main.h"
 #include "p_maputl.h"
 #include "p_setup.h"
@@ -119,11 +115,8 @@ static boolean P_CrossSubsector(int num)
     
     line->validcount = validcount;
     
-    /* OPTIMIZE: killough 4/20/98: Added quick bounding-box rejection test
-     * cph - this is causing demo desyncs on original Doom demos. 
-     *  Who knows why. Exclude test for those.
-     */
-    if (!demo_compatibility)
+    // OPTIMIZE: killough 4/20/98: Added quick bounding-box rejection test
+    
     if (line->bbox[BOXLEFT  ] > los.bbox[BOXRIGHT ] ||
 	line->bbox[BOXRIGHT ] < los.bbox[BOXLEFT  ] ||
 	line->bbox[BOXBOTTOM] > los.bbox[BOXTOP   ] ||
@@ -149,7 +142,7 @@ static boolean P_CrossSubsector(int num)
 	front->floorheight : back->floorheight ;
       
       // cph - reject if does not intrude in the z-space of the possible LOS
-      if ((opentop >= los.maxz) && (openbottom <= los.minz)) 
+      if ((opentop > los.maxz) && (openbottom < los.minz)) 
 	continue;
     }
     
@@ -218,16 +211,8 @@ static boolean P_CrossBSPNode(int bspnum)
   while (!(bspnum & NF_SUBSECTOR))
     {
       register const node_t *bsp = nodes + bspnum;
-      int side,side2;
-      /* cph - LxDoom used some R_* funcs here */
-      if (compatibility_level == lxdoom_1_compatibility) {
-	side = R_PointOnSide(los.strace.x, los.strace.y, bsp);
-	side2 = R_PointOnSide(los.t2x, los.t2y, bsp);
-      } else {
-	side = P_DivlineSide(los.strace.x,los.strace.y,(divline_t *)bsp)&1;
-	side2= P_DivlineSide(los.t2x, los.t2y, (divline_t *) bsp);
-      }
-      if (side == side2)
+      int side = R_PointOnSide(los.strace.x, los.strace.y, bsp);
+      if (side == R_PointOnSide(los.t2x, los.t2y, bsp))
          bspnum = bsp->children[side]; // doesn't touch the other side
       else         // the partition plane is crossed here
         if (!P_CrossBSPNode(bsp->children[side]))
@@ -275,12 +260,6 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
          t1->z + t2->height <= sectors[s2->heightsec].ceilingheight))))
     return false;
 
-  /* killough 11/98: shortcut for melee situations
-   * same subsector? obviously visible
-   * cph - DEMOSYNC - shouldn't break stuff but... */
-  if (t1->subsector == t2->subsector)
-    return true;
-
   // An unobstructed LOS is possible.
   // Now look from eyes of t1 to any part of t2.
 
@@ -302,23 +281,60 @@ boolean P_CheckSight(mobj_t *t1, mobj_t *t2)
   else
     los.bbox[BOXTOP] = t2->y, los.bbox[BOXBOTTOM] = t1->y;
 
-  /* cph - calculate min and max z of the potential line of sight
-   * For old demos, we disable this optimisation by setting them to 
-   * the extremes */
-  switch (compatibility_level) {
-  case lxdoom_1_compatibility:
-    if (los.sightzstart < t2->z) {
-      los.maxz = t2->z + t2->height; los.minz = los.sightzstart;
-    } else if (los.sightzstart > t2->z + t2->height) {
-      los.maxz = los.sightzstart; los.minz = t2->z;
-    } else {
-      los.maxz = t2->z + t2->height; los.minz = t2->z;
-    }
-    break;
-  default:
-    los.maxz = INT_MAX; los.minz = INT_MIN;
+  // cph - calculate min and max z of the potential line of sight
+  if (los.sightzstart < t2->z) {
+    los.maxz = t2->z + t2->height; los.minz = los.sightzstart;
+  } else if (los.sightzstart > t2->z + t2->height) {
+    los.maxz = los.sightzstart; los.minz = t2->z;
+  } else {
+    los.maxz = t2->z + t2->height; los.minz = t2->z;
   }
 
   // the head node is the last node output
   return P_CrossBSPNode(numnodes-1);
 }
+
+//----------------------------------------------------------------------------
+//
+// $Log: p_sight.c,v $
+// Revision 1.1  2000/05/04 08:13:46  proff_fs
+// Initial revision
+//
+// Revision 1.5  2000/04/15 14:30:05  cph
+// Make optimisation in P_CrossSubsector less aggressive
+//  (restoring demo sync in mm.wad DEMO3)
+//
+// Revision 1.4  1999/11/01 17:09:15  cphipps
+// Added lprintf.h (needed for RANGECHECK debugging I_Error calls)
+//
+// Revision 1.3  1999/10/12 13:01:13  cphipps
+// Changed header to GPL
+//
+// Revision 1.2  1999/08/21 09:18:14  cphipps
+// Various optimisations
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.7  1998/05/07  00:55:55  killough
+// Make monsters directly tangent to water surface blind
+//
+// Revision 1.6  1998/05/03  22:34:33  killough
+// beautification, header cleanup
+//
+// Revision 1.5  1998/05/01  14:52:09  killough
+// beautification
+//
+// Revision 1.4  1998/04/24  11:43:08  killough
+// minor optimization
+//
+// Revision 1.3  1998/04/20  11:13:41  killough
+// Fix v1.9 demo sync probs, make monsters blind across water
+//
+// Revision 1.2  1998/01/26  19:24:24  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:00  rand
+// Lee's Jan 19 sources
+//
+//----------------------------------------------------------------------------

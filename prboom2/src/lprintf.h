@@ -1,16 +1,12 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: lprintf.h,v 1.5 2000/05/11 20:01:06 proff_fs Exp $
+ * $Id: lprintf.h,v 1.1 2000/05/04 08:08:40 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
- *  Copyright (C) 1999 by
- *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *  Console output wrapper.
+ *  Copyright (C) 1999 by Jim Flynn, Rand Phares, Ty Halderman, Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -59,10 +55,29 @@ extern int cons_error_mask;
  * cphipps 01/11- moved from i_system.h */
 void I_Error(const char *error, ...) __attribute__((format(printf,1,2)));
 
-#ifdef _WIN32
-void I_ConTextAttr(byte a);
-int Init_ConsoleWin(void);
-void Done_ConsoleWin(void);
 #endif
 
-#endif
+/*----------------------------------------------------------------------------
+ *
+ * $Log: lprintf.h,v $
+ * Revision 1.1  2000/05/04 08:08:40  proff_fs
+ * Initial revision
+ *
+ * Revision 1.4  1999/10/31 12:54:09  cphipps
+ * Moved I_Error to lprintf.c
+ * Finished off C++ comments
+ *
+ * Revision 1.3  1999/10/12 13:00:57  cphipps
+ * Changed header to GPL, converted C++ comments to C
+ *
+ * Revision 1.2  1999/01/07 10:21:01  cphipps
+ * Fix __attribute__ handling for non-gnu compilers
+ *
+ * Revision 1.1  1998/10/27 20:52:29  cphipps
+ * Initial revision
+ *
+ * Revision 1.2  1998/09/09  21:21:43  phares
+ * Added Log line
+ *
+ *
+ *----------------------------------------------------------------------------*/

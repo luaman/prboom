@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_system.h,v 1.2 2000/05/09 21:45:36 proff_fs Exp $
+ * $Id: i_system.h,v 1.1 2000/05/04 08:02:58 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -56,3 +53,15 @@ const char* I_GetVersionString(char* buf, size_t sz);
 const char* I_SigString(char* buf, size_t sz, int signum);
 
 #endif
+
+/*----------------------------------------------------------------------------
+ * $Log: i_system.h,v $
+ * Revision 1.1  2000/05/04 08:02:58  proff_fs
+ * Initial revision
+ *
+ * Revision 1.10  1999/10/31 16:30:31  cphipps
+ * Moved many prototypes to i_main.h
+ * Cleaned some dead wood
+ * Added a couple of prototypes for new stuff in l_system.c
+ *
+ *----------------------------------------------------------------------------*/

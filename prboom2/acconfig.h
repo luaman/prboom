@@ -1,6 +1,6 @@
 /* acconfig.h for LxDoom
  *
- * $Id: acconfig.h,v 1.5 2000/05/11 07:26:36 cph Exp $
+ * $Id: acconfig.h,v 1.1 2000/05/04 07:53:31 proff_fs Exp $
  * Parts Copyright (C) 1993-1996 by id Software, Inc.
  *
  * Process this file with autoheader to produce config.h.in,
@@ -26,9 +26,6 @@
 
 /* Define on I386 target */
 #undef I386
-
-/* Define on targets supporting 386 Assembly */
-#undef I386_ASM
 
 /* Define on big endian target */
 #undef __BIG_ENDIAN__
@@ -88,15 +85,29 @@
 /* Define if you have the DGA library -lXxf86dga */
 #undef HAVE_LIBXXF86DGA
 
-/* Define if you have the SDL mixer library -lSDL_mixer */
-#undef HAVE_LIBSDL_MIXER
-
-/* Define if you want networkg ame support */
-#undef HAVE_NET
-
 /* Define if you have struct sockaddr_in6 */
 #undef HAVE_IPv6
 
-/* Define if you want to build with OpenGL support */
-#undef GL_DOOM
-
+/* 
+ * $Log: acconfig.h,v $
+ * Revision 1.1  2000/05/04 07:53:31  proff_fs
+ * Initial revision
+ *
+ * Revision 1.5  2000/04/09 13:39:43  cph
+ * Get ./configure heap dumping option working
+ * Fix w_wad.c check
+ *
+ * Revision 1.4  2000/04/03 21:47:35  cph
+ * Better detection fo IPv6
+ * Minor header file corrections
+ *
+ * Revision 1.3  2000/01/25 21:33:22  cphipps
+ * Fix security in case of being setuid
+ *
+ * Revision 1.2  1999/10/02 11:43:37  cphipps
+ * Added autoconf options to control diagnostics
+ *
+ * Revision 1.1  1999/09/10 20:09:11  cphipps
+ * Initial revision
+ *
+ */

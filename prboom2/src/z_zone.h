@@ -1,16 +1,13 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: z_zone.h,v 1.3 2000/05/09 21:45:40 proff_fs Exp $
+ * $Id: z_zone.h,v 1.1 2000/05/04 08:19:31 proff_fs Exp $
  *
- *  PrBoom a Doom port merged with LxDoom and LSDLDoom
+ *  LxDoom, a Doom port for Linux/Unix
  *  based on BOOM, a modified and improved DOOM engine
  *  Copyright (C) 1999 by
  *  id Software, Chi Hoang, Lee Killough, Jim Flynn, Rand Phares, Ty Halderman
- *  Copyright (C) 1999-2000 by
- *  Colin Phipps (cph@lxdoom.linuxgames.com), 
- *  Jess Haas (JessH@lbjhs.net)
- *  and Florian Schulze (florian.proff.schulze@gmx.net)
+ *   and Colin Phipps
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License
@@ -70,10 +67,8 @@ enum {PU_FREE, PU_STATIC, PU_SOUND, PU_MUSIC, PU_LEVEL, PU_LEVSPEC, PU_CACHE,
 
 #ifdef INSTRUMENTED
 #define DA(x,y) ,x,y
-#define DAC(x,y) x,y
 #else
 #define DA(x,y) 
-#define DAC(x,y)
 #endif
 
 void *(Z_Malloc)(size_t size, int tag, void **ptr DA(const char *, int));
@@ -84,7 +79,7 @@ void (Z_Init)(void);
 void *(Z_Calloc)(size_t n, size_t n2, int tag, void **user DA(const char *, int));
 void *(Z_Realloc)(void *p, size_t n, int tag, void **user DA(const char *, int));
 char *(Z_Strdup)(const char *s, int tag, void **user DA(const char *, int));
-void (Z_CheckHeap)(DAC(const char *,int));   // killough 3/22/98: add file/line info
+void (Z_CheckHeap)(DA(const char *,int));   // killough 3/22/98: add file/line info
 void Z_DumpHistory(char *);
 
 #ifdef INSTRUMENTED
@@ -114,3 +109,48 @@ void doom_printf(const char *, ...) __attribute__((format(printf,1,2)));
 void Z_ZoneHistory(char *);
 
 #endif
+
+//----------------------------------------------------------------------------
+//
+// $Log: z_zone.h,v $
+// Revision 1.1  2000/05/04 08:19:31  proff_fs
+// Initial revision
+//
+// Revision 1.5  2000/04/10 17:19:21  cph
+// Remove file & line debugging from z_zone.* when not debugging
+//
+// Revision 1.4  1999/10/12 13:01:16  cphipps
+// Changed header to GPL
+//
+// Revision 1.3  1999/03/02 13:16:22  cphipps
+// Fix header declarations for glibc2.1
+//
+// Revision 1.2  1998/10/20 07:03:22  cphipps
+// dprintf -> doom_printf
+//
+// Revision 1.1  1998/09/13 16:49:50  cphipps
+// Initial revision
+//
+// Revision 1.7  1998/05/08  20:32:12  killough
+// fix __attribute__ redefinition
+//
+// Revision 1.6  1998/05/03  22:38:11  killough
+// Remove unnecessary #include
+//
+// Revision 1.5  1998/04/27  01:49:42  killough
+// Add history of malloc/free and scrambler (INSTRUMENTED only)
+//
+// Revision 1.4  1998/03/23  03:43:54  killough
+// Make Z_CheckHeap() more diagnostic
+//
+// Revision 1.3  1998/02/02  13:28:06  killough
+// Add dprintf
+//
+// Revision 1.2  1998/01/26  19:28:04  phares
+// First rev with no ^Ms
+//
+// Revision 1.1.1.1  1998/01/19  14:03:06  rand
+// Lee's Jan 19 sources
+//
+//
+//----------------------------------------------------------------------------
