@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: m_misc.c,v 1.25 2000/11/19 10:16:59 cph Exp $
+ * $Id: m_misc.c,v 1.1.1.2 2000/09/20 09:43:49 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -33,7 +33,7 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: m_misc.c,v 1.25 2000/11/19 10:16:59 cph Exp $";
+rcsid[] = "$Id: m_misc.c,v 1.1.1.2 2000/09/20 09:43:49 figgi Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -137,8 +137,12 @@ int M_ReadFile(char const* name,byte** buffer)
   byte   *buf;
   
   handle = open (name, O_RDONLY | O_BINARY, 0666);
-  if ((handle == -1) || (fstat (handle,&fileinfo) == -1))
-    I_Error ("M_ReadFile: Couldn't read file %s", name);
+  if (handle == -1)
+    I_Error ("Couldn't read file %s", name);
+  if (fstat (handle,&fileinfo) == -1) {
+    close(handle);
+    I_Error ("Couldn't read file %s", name);
+  }
 
   length = fileinfo.st_size;
   buf = Z_Malloc (length, PU_STATIC, NULL);
@@ -146,7 +150,7 @@ int M_ReadFile(char const* name,byte** buffer)
   close (handle);
   
   if (count < length)
-    I_Error ("M_ReadFile: Couldn't read file %s", name);
+    I_Error ("Couldn't read file %s", name);
     
   *buffer = buf;
   return length;
@@ -166,16 +170,7 @@ extern int mousebforward;
 extern int viewwidth;
 extern int viewheight;
 extern int fake_contrast;
-#ifdef GL_DOOM
-extern int gl_nearclip;
-extern int gl_farclip;
-extern int gl_colorbuffer_bits;
-extern int gl_depthbuffer_bits;
-extern char *gl_tex_filter_string;
-extern char *gl_tex_format_string;
-extern int gl_drawskys;
-extern int gl_sortsprites;
-#endif
+
 extern int mouseSensitivity_horiz,mouseSensitivity_vert;  // killough
 
 extern int realtic_clock_rate;         // killough 4/13/98: adjustable timer
@@ -314,6 +309,12 @@ default_t defaults[] =
   {"music_volume",{&snd_MusicVolume},{8},0,15, def_int,ss_none},
   {"mus_pause_opt",{&mus_pause_opt},{0},0,2, // CPhipps - music pausing
    def_int, ss_none}, // 0 = kill music when paused, 1 = pause music, 2 = let music continue
+#ifndef _WIN32
+  {"soundsrv", {NULL,&sndserver_filename}, {0,SNDSERV_PATH},UL,UL,
+   def_str,ss_none}, // path to sound server (UNIX)
+  {"musicsrv", {NULL,&musserver_filename}, {0,MUSSERV_PATH},UL,UL,
+   def_str,ss_none}, // path to music server (UNIX)
+#endif
   {"sounddev", {NULL,&snd_device}, {0,"/dev/dsp"},UL,UL,
    def_str,ss_none}, // sound output device (UNIX)
   {"snd_channels",{&numChannels},{32},1,UL,
@@ -321,18 +322,10 @@ default_t defaults[] =
 
   {"Video settings",{NULL},{0},UL,UL,def_none,ss_none},
   // CPhipps - default screensize for targets that support high-res
-#ifndef GL_DOOM
   {"screen_width",{&desired_screenwidth},{320}, 320, 1600, 
    def_int,ss_none},
   {"screen_height",{&desired_screenheight},{200},200,1200,
    def_int,ss_none},  
-#else
-  /* proff - 640x480 for OpenGL */
-  {"screen_width",{&desired_screenwidth},{640}, 320, 1600, 
-   def_int,ss_none},
-  {"screen_height",{&desired_screenheight},{480},200,1200,
-   def_int,ss_none},  
-#endif
   {"fake_contrast",{&fake_contrast},{1},0,1,
    def_bool,ss_none}, /* cph - allow crappy fake contrast to be disabled */
   {"use_fullscreen",{&use_fullscreen},{1},0,1, /* proff 21/05/2000 */
@@ -349,26 +342,6 @@ default_t defaults[] =
    def_int,ss_none}, // gamma correction level // killough 1/18/98
   {"X_options",{&X_opt},{0},0,3, // CPhipps - misc X options
    def_hex,ss_none}, // X options, see l_video_x.c  
-
-#ifdef GL_DOOM
-  {"OpenGL settings",{NULL},{0},UL,UL,def_none,ss_none},
-  {"gl_nearclip",{&gl_nearclip},{5},0,UL,
-   def_int,ss_none}, /* near clipping plane pos */
-  {"gl_farclip",{&gl_farclip},{6400},0,UL,
-   def_int,ss_none}, /* far clipping plane pos */
-  {"gl_colorbuffer_bits",{&gl_colorbuffer_bits},{16},16,32,
-   def_int,ss_none},
-  {"gl_depthbuffer_bits",{&gl_depthbuffer_bits},{16},16,32,
-   def_int,ss_none},
-  {"gl_tex_filter_string", {NULL,&gl_tex_filter_string}, {0,"GL_LINEAR"},UL,UL,
-   def_str,ss_none},
-  {"gl_tex_format_string", {NULL,&gl_tex_format_string}, {0,"GL_RGB5_A1"},UL,UL,
-   def_str,ss_none},
-  {"gl_drawskys",{&gl_drawskys},{1},0,1,
-   def_bool,ss_none},
-  {"gl_sortsprites",{&gl_sortsprites},{1},0,1,
-   def_bool,ss_none},
-#endif
 
   {"Mouse settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"use_mouse",{&usemouse},{1},0,1,
@@ -750,7 +723,6 @@ struct default_s *M_LookupDefault(const char *name)
     if ((defaults[i].type != def_none) && !strcmp(name, defaults[i].name))
       return &defaults[i];
   I_Error("M_LookupDefault: %s not found",name);
-  return NULL;
 }
 
 //
@@ -773,22 +745,36 @@ void M_LoadDefaults (void)
   // set everything to base values
 
   numdefaults = sizeof(defaults)/sizeof(defaults[0]);
-  for (i = 0 ; i < numdefaults ; i++) {
+  for (i = 0 ; i < numdefaults ; i++)
+    {
     if (defaults[i].location.ppsz) 
-      *defaults[i].location.ppsz = strdup(defaults[i].defaultvalue.psz);
+      *defaults[i].location.ppsz = defaults[i].defaultvalue.psz;
     if (defaults[i].location.pi)
       *defaults[i].location.pi = defaults[i].defaultvalue.i;
-  }
+
+    // phares 4/13/98:
+    // provide default strings with their own malloced memory so that when
+    // we leave this routine, that's what we're dealing with whether there
+    // was a config file or not, and whether there were chat definitions
+    // in it or not. This provides consistency later on when/if we need to
+    // edit these strings (i.e. chat macros in the Chat Strings Setup screen).
+
+    if (IS_STRING(defaults[i]))
+      *(defaults[i].location.ppsz) = strdup(*(defaults[i].location.ppsz));
+    }
     
   // check for a custom default file
 
   i = M_CheckParm ("-config");
   if (i && i < myargc-1)
+    {
     defaultfile = myargv[i+1];
+    }
   else
     defaultfile = basedefault;
 
-  lprintf (LO_CONFIRM, " default file: %s\n",defaultfile);
+  if (i || devparm ) // if debug or -config was specified
+    lprintf (LO_CONFIRM, " default file: %s\n",defaultfile);
 
   // read the file in, overriding any set defaults
 
@@ -841,7 +827,7 @@ void M_LoadDefaults (void)
               }
             else
               {
-              free((char*)*(defaults[i].location.ppsz));  /* phares 4/13/98 */
+              free((char*)*(defaults[i].location.ppsz));    // phares 4/13/98
               *(defaults[i].location.ppsz) = newstring;
               }
             break;

@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_network.c,v 1.3 2000/11/12 14:59:29 cph Exp $
+ * $Id: i_network.c,v 1.1.1.1 2000/09/20 09:40:34 figgi Exp $
  *
  *  New UDP networking code for LxDoom, based in part on 
  *  the original linuxdoom networking
@@ -94,7 +94,7 @@ void I_InitNetwork(const char* serv, int pn)
 
   // Get local & remote network addresses
   if (!GetInAddr(serv, &sendtoaddr)) 
-    I_Error("I_InitNetwork: Unable to locate server");
+    I_Error("I_InitNetwork: Unable to locate server.\n");
   if (gethostname(initpacket.myaddr, 200)<0) 
     strcpy(initpacket.myaddr, "too.long");
 
@@ -105,7 +105,7 @@ void I_InitNetwork(const char* serv, int pn)
       I_SetupSocket(v4socket, 0, AF_INET);
       break;
     default:
-      I_Error("I_InetNetwork: Unable to construct socket matching protocol family of server");
+      I_Error("Unable to construct socket matching protocol family of server");
     }
   }
   // Send init packet

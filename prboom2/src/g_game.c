@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: g_game.c,v 1.30 2000/11/12 14:59:29 cph Exp $
+ * $Id: g_game.c,v 1.1.1.2 2000/09/20 09:40:33 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -35,7 +35,7 @@
  */
 
 static const char
-rcsid[] = "$Id: g_game.c,v 1.30 2000/11/12 14:59:29 cph Exp $";
+rcsid[] = "$Id: g_game.c,v 1.1.1.2 2000/09/20 09:40:33 figgi Exp $";
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -849,8 +849,8 @@ void G_Ticker (void)
             {
               if (gametic > BACKUPTICS
                   && consistancy[i][buf] != cmd->consistancy)
-                I_Error("G_Ticker: Consistency failure (%i should be %i)",
-						cmd->consistancy, consistancy[i][buf]);
+                I_Error ("consistency failure (%i should be %i)",
+                         cmd->consistancy, consistancy[i][buf]);
               if (players[i].mo)
                 consistancy[i][buf] = players[i].mo->x;
               else
@@ -1108,18 +1108,18 @@ boolean G_CheckSpot(int playernum, mapthing_t *mthing)
   return true;
 }
 
-
+//
 // G_DeathMatchSpawnPlayer
 // Spawns a player at one of the random death match spots
 // called at level load and each death
 //
+
 void G_DeathMatchSpawnPlayer (int playernum)
 {
   int j, selections = deathmatch_p - deathmatchstarts;
 
   if (selections < MAXPLAYERS)
-    I_Error("G_DeathMatchSpawnPlayer: Only %i deathmatch spots, %d required",
-		selections, MAXPLAYERS);
+    I_Error("Only %i deathmatch spots, %d required", selections, MAXPLAYERS);
 
   for (j=0 ; j<20 ; j++)
     {
@@ -1482,9 +1482,8 @@ static void G_LoadGameErr(const char *msg)
 #define VERSIONSIZE   16
 
 const char * comp_lev_str[MAX_COMPATIBILITY_LEVEL] = 
-{ "doom v1.2", "demo", "doom", "\"boom compatibility\"", "boom v2.01", "boom v2.02", "lxdoom v1.3.2+", 
-  "MBF", "PrBoom 2.03beta", "PrBoom v2.1.0-2.1.1", 
-  "Current PrBoom"  };
+{ "demo", "doom", "\"boom compatibility\"", "boom", "lxdoom v1.3.2+", 
+  "MBF", "PrBoom 2.03beta", "New PrBoom"  };
 
 static const struct {
   int comp_level;
@@ -1492,9 +1491,12 @@ static const struct {
   int version;
 } version_headers[] = {
   { prboom_1_compatibility, "PrBoom %d", 260},
-  /* cph - we don't need a new version_header for prboom_3_comp/v2.1.1, since
-   *  the file format is unchanged. */
-  { prboom_3_compatibility, "PrBoom %d", 210}
+  { prboom_2_compatibility, "PrBoom %d", 210}
+#if 0
+  { boom_compatibility, "BoomVer %d", 202 },
+  { lxdoom_1_compatibility, "LxD %d", 203 },
+  { boom_compatibility_compatibility, "BoomVer %d", 202 }
+#endif
 };
 
 static const size_t num_version_headers = sizeof(version_headers) / sizeof(version_headers[0]);
@@ -1606,7 +1608,7 @@ void G_DoLoadGame(void)
   P_UnArchiveMap ();    // killough 1/22/98: load automap information
 
   if (*save_p != 0xe6)
-    I_Error ("G_DoLoadGame: Bad savegame");
+    I_Error ("Bad savegame");
 
   // done
   Z_Free (savebuffer);
@@ -2161,7 +2163,7 @@ void G_RecordDemo (const char* name)
 	  if ((buf[3] & BT_SPECIALMASK) == BTS_SAVEGAME)
 	    slot = (buf[3] & BTS_SAVEMASK)>>BTS_SAVESHIFT;
       } while (rc == /* sizeof(buf) is out of scope here */ 4 );
-      if (slot == -1) I_Error("G_RecordDemo: No save in demo, can't continue");
+      if (slot == -1) I_Error("No save in demo, can't continue");
       fseek(demofp, -rc, SEEK_CUR);
       G_LoadGame(slot, false);
       autostart = false;
@@ -2336,9 +2338,11 @@ const byte *G_ReadOptions(const byte *demo_p)
 	  comp[i] = *demo_p++;
       }
     }
-  else  /* defaults for versions <= 2.02 */
+  else  // defaults for versions < 2.02
     {
-      /* cph - comp[] has already been set up right by G_Compatibility */
+      int i;  // killough 10/98: a compatibility vector now
+      for (i=0; i < COMP_TOTAL; i++)
+	comp[i] = compatibility;
 
       monster_infighting = 1;           // killough 7/19/98
 
@@ -2369,15 +2373,9 @@ void G_BeginRecording (void)
 
   /* cph - 3 demo record formats supported: MBF+, BOOM, and Doom v1.9 */
   if (mbf_features) {
-    { /* Write version code into demo */
-      unsigned char v;
-      switch(compatibility_level) {
-	      case mbf_compatibility: v = 204; break;
-	      case prboom_2_compatibility: v = 210; break;
-	      case prboom_3_compatibility: v = 211; break;
-      }
-      *demo_p++ = v;
-    }
+    /* cph - FIXME - use version_headers? */
+    *demo_p++ = compatibility_level == mbf_compatibility ?
+      204 : 210;
     
     // signature
     *demo_p++ = 0x1d;
@@ -2410,14 +2408,7 @@ void G_BeginRecording (void)
       *demo_p++ = 0;
 
   } else if (compatibility_level > doom_compatibility) {
-    byte v, c; /* Nominally, version and compatibility bits */
-    switch (compatibility_level) {
-    case boom_compatibility_compatibility: v = 202, c = 1; break;
-    case boom_201_compatibility: v = 201; c = 0; break;
-    case boom_202_compatibility: v = 202, c = 0; break;
-    default: I_Error("G_BeginRecording: Boom compatibility level unrecognised?");
-    }
-    *demo_p++ = v;
+    *demo_p++ = (compatibility_level < lxdoom_1_compatibility) ? 202 : 203;
     
     // signature
     *demo_p++ = 0x1d;
@@ -2428,7 +2419,7 @@ void G_BeginRecording (void)
     *demo_p++ = 0xe6;
     
     /* CPhipps - save compatibility level in demos */
-    *demo_p++ = c; 
+    *demo_p++ = boom_compatibility_compatibility + 1 - compatibility_level; 
     
     *demo_p++ = gameskill;
     *demo_p++ = gameepisode;
@@ -2462,10 +2453,9 @@ void G_BeginRecording (void)
   }
 
   if (fwrite(demostart, 1, demo_p-demostart, demofp) != (size_t)(demo_p-demostart))
-    I_Error("G_BeginRecording: Error writing demo header");
+    I_Error("G_BeginRecording: error writing demo header");
   free(demostart);
 }
-
 //
 // G_PlayDemo
 //
@@ -2549,26 +2539,19 @@ static const byte* G_ReadDemoHeader(const byte *demo_p)
     {
       demo_p += 6;               // skip signature;
       switch (demover) {
-      case 200: /* BOOM */
+      case 200:
       case 201:
-        if (!*demo_p++)
-	  compatibility_level = boom_201_compatibility;
-        else
-	  compatibility_level = boom_compatibility_compatibility;
-	break;
       case 202:
-        if (!*demo_p++)
-	  compatibility_level = boom_202_compatibility; 
-        else
-	  compatibility_level = boom_compatibility_compatibility;
+	/* BOOM */
+	compatibility_level = (*demo_p++) ? boom_compatibility_compatibility
+	  : boom_compatibility;
 	break;
       case 203:
 	/* LxDoom or MBF - determine from signature
 	 * cph - load compatibility level */
 	switch (demobuffer[2]) {
 	case 'B': /* LxDoom */
-	/* cph - DEMOSYNC - LxDoom demos recorded in compatibility modes support dropped */
-	  compatibility_level = lxdoom_1_compatibility;
+	  compatibility_level = boom_compatibility_compatibility + 1 - (signed char)(*demo_p++);
 	  break;
 	case 'M':
 	  compatibility_level = mbf_compatibility;
@@ -2577,11 +2560,8 @@ static const byte* G_ReadDemoHeader(const byte *demo_p)
 	}
 	break;
       case 210:
+	/* PrBoom? */
 	compatibility_level = prboom_2_compatibility;
-	demo_p++;
-	break;
-      case 211:
-	compatibility_level = prboom_3_compatibility;
 	demo_p++;
 	break;
       }
@@ -2671,18 +2651,21 @@ void G_TimeDemo(const char *name) // CPhipps - const char*
   gameaction = ga_playdemo;
 }
 
-/* G_CheckDemoStatus
- *
- * Called after a death or level completion to allow demos to be cleaned up
- * Returns true if a new demo loop action will take place
- */
+//===================
+//=
+//= G_CheckDemoStatus
+//=
+//= Called after a death or level completion to allow demos to be cleaned up
+//= Returns true if a new demo loop action will take place
+//===================
+
 boolean G_CheckDemoStatus (void)
 {
   if (demorecording)
     {
       demorecording = false;
       fputc(DEMOMARKER, demofp);
-      I_Error("G_CheckDemoStatus: Demo recorded");
+      I_Error("Demo recorded");
       return false;  // killough
     }
 

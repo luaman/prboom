@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: m_misc.h,v 1.6 2000/11/13 21:24:12 cph Exp $
+ * $Id: m_misc.h,v 1.1.1.2 2000/09/20 09:43:49 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -65,19 +65,10 @@ struct default_s *M_LookupDefault(const char *name);     /* killough 11/98 */
 typedef struct default_s
 {
   const char* name;
-  /* cph - 
-   * The location struct holds the pointer to the variable holding the 
-   *  setting. For int's we do nothing special.
-   * For strings, the string is actually stored on our heap with Z_Strdup()
-   *  BUT we don't want the rest of the program to be able to modify them, 
-   *  so we declare it const. It's not really const though, and m_misc.c and 
-   *  m_menu.c cast it back when they need to change it. Possibly this is 
-   *  more trouble than it's worth.
-   */
   struct {
     int* pi;
     const char** ppsz;
-  } location;
+  } location; // CPhipps - pointer to the value
   struct {
     int i;
     const char* psz;

@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: r_things.c,v 1.14 2000/11/19 20:24:11 proff_fs Exp $
+ * $Id: r_things.c,v 1.1.1.2 2000/09/20 09:45:38 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -31,7 +31,7 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: r_things.c,v 1.14 2000/11/19 20:24:11 proff_fs Exp $";
+rcsid[] = "$Id: r_things.c,v 1.1.1.2 2000/09/20 09:45:38 figgi Exp $";
 
 #include "doomstat.h"
 #include "w_wad.h"
@@ -404,7 +404,7 @@ void R_DrawVisSprite(vissprite_t *vis, int x1, int x2)
 
 #ifdef RANGECHECK
       if (texturecolumn < 0 || texturecolumn >= SHORT(patch->width))
-        I_Error ("R_DrawSpriteRange: Bad texturecolumn");
+        I_Error ("R_DrawSpriteRange: bad texturecolumn");
 #endif
 
       column = (const column_t *)((const byte *) patch +
@@ -432,9 +432,7 @@ void R_ProjectSprite (mobj_t* thing)
   int       lump;
   boolean   flip;
   vissprite_t *vis;
-#ifndef GL_DOOM
   fixed_t   iscale;
-#endif
   int heightsec;      // killough 3/27/98
 
   // transform the origin point
@@ -463,14 +461,14 @@ void R_ProjectSprite (mobj_t* thing)
     // decide which patch to use for sprite relative to player
 #ifdef RANGECHECK
   if ((unsigned) thing->sprite >= (unsigned)numsprites)
-    I_Error ("R_ProjectSprite: Invalid sprite number %i", thing->sprite);
+    I_Error ("R_ProjectSprite: invalid sprite number %i ", thing->sprite);
 #endif
 
   sprdef = &sprites[thing->sprite];
 
 #ifdef RANGECHECK
   if ((thing->frame&FF_FRAMEMASK) >= sprdef->numframes)
-    I_Error ("R_ProjectSprite: Invalid sprite frame %i : %i", thing->sprite,
+    I_Error ("R_ProjectSprite: invalid sprite frame %i : %i ", thing->sprite,
              thing->frame);
 #endif
 
@@ -542,9 +540,9 @@ void R_ProjectSprite (mobj_t* thing)
   vis->flip = flip;
   vis->scale = FixedDiv(projectiony, tz);
   vis->patch = lump;
-  gld_AddSprite(vis);
   return;
-#else
+#endif
+
   // killough 3/27/98: save sector for special clipping later
   vis->heightsec = heightsec;
 
@@ -589,7 +587,6 @@ void R_ProjectSprite (mobj_t* thing)
         index = MAXLIGHTSCALE-1;
       vis->colormap = spritelights[index];
     }
-#endif
 }
 
 //
@@ -597,9 +594,9 @@ void R_ProjectSprite (mobj_t* thing)
 // During BSP traversal, this adds sprites by sector.
 //
 // killough 9/18/98: add lightlevel as parameter, fixing underwater lighting
-void R_AddSprites(subsector_t* subsec, int lightlevel)
+
+void R_AddSprites(sector_t* sec, int lightlevel)
 {
-  sector_t* sec=subsec->sector;
   mobj_t *thing;
   int    lightnum;
 
@@ -648,14 +645,14 @@ void R_DrawPSprite (pspdef_t *psp)
 
 #ifdef RANGECHECK
   if ( (unsigned)psp->state->sprite >= (unsigned)numsprites)
-    I_Error ("R_ProjectSprite: Invalid sprite number %i", psp->state->sprite);
+    I_Error ("R_ProjectSprite: invalid sprite number %i ", psp->state->sprite);
 #endif
 
   sprdef = &sprites[psp->state->sprite];
 
 #ifdef RANGECHECK
   if ( (psp->state->frame & FF_FRAMEMASK)  >= sprdef->numframes)
-    I_Error ("R_ProjectSprite: Invalid sprite frame %i : %li",
+    I_Error ("R_ProjectSprite: invalid sprite frame %i : %li ",
              psp->state->sprite, psp->state->frame);
 #endif
 
@@ -994,6 +991,17 @@ void R_DrawSprite (vissprite_t* spr)
 
 void R_DrawMasked(void)
 {
+#ifdef GL_DOOM
+  int i;
+
+  R_SortVisSprites();
+
+  // draw all vissprites back to front
+
+  rendered_vissprites = num_vissprite;
+  for (i = num_vissprite ;--i>=0; )
+    gld_DrawSprite(vissprite_ptrs[i]);
+#else
   int i;
   drawseg_t *ds;
 
@@ -1021,4 +1029,5 @@ void R_DrawMasked(void)
   //  but does not draw on side views
   if (!viewangleoffset)
     R_DrawPlayerSprites ();
+#endif
 }

@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: config.h,v 1.14 2000/11/22 21:46:46 proff_fs Exp $
+ * $Id: config.h,v 1.1.1.1 2000/09/20 09:38:17 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -32,8 +32,6 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#define inline __inline
-
 /* Define if you have the ANSI C header files.  */
 #define STDC_HEADERS 1
 
@@ -47,9 +45,15 @@
 /* Define to strncasecmp, if we have it */
 #define strnicmp strncasecmp
 
+/* Define on I386 target */
+#define I386 1
+
 /* Define on targets supporting 386 Assembly */
 /* This is in the project settings */
 /* #define I386_ASM 1 */
+
+/* Define for high resolution support */
+#define HIGHRES 1
 
 /* Define to enable internal range checking */
 /* #undef RANGECHECK */
@@ -118,7 +122,7 @@
 #define vsnprintf _vsnprintf
 
 /* Define for support for MBF helper dogs */
-#define DOGS 1
+#define DOGS
 
 /* Define if you want to have boomlump.wad in the exe  */
 #define ALL_IN_ONE 1
@@ -126,10 +130,10 @@
 /* Define if you want to compile with SDL  */
 #define USE_SDL 1
 
-#define MONITOR_VISIBILITY 1
+#define MONITOR_VISIBILITY
 
 /* Define if you want to use the gluTesselator  */
-#define USE_GLU_TESS 1
+//#define USE_GLU_TESS // figgi
 
 /* Define if you want to use gluImageScale  */
 #define USE_GLU_IMAGESCALE 1
@@ -141,4 +145,4 @@
 #define PACKAGE "prboom"
 
 /* Version number of package */
-#define VERSION "2.1.1"
+#define VERSION "2.1.0"

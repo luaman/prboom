@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: doomstat.c,v 1.6 2000/09/16 20:20:35 proff_fs Exp $
+ * $Id: doomstat.c,v 1.1.1.2 2000/09/20 09:40:14 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -32,7 +32,7 @@
  */
 
 static const char
-rcsid[] = "$Id: doomstat.c,v 1.6 2000/09/16 20:20:35 proff_fs Exp $";
+rcsid[] = "$Id: doomstat.c,v 1.1.1.2 2000/09/20 09:40:14 figgi Exp $";
 
 #ifdef __GNUG__
 #pragma implementation "doomstat.h"

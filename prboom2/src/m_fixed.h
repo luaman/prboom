@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: m_fixed.h,v 1.7 2000/11/22 21:46:48 proff_fs Exp $
+ * $Id: m_fixed.h,v 1.1.1.2 2000/09/20 09:43:42 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -33,7 +33,6 @@
 #ifndef __M_FIXED__
 #define __M_FIXED__
 
-#include "../config.h"
 #include "doomtype.h"
 
 /*
@@ -52,7 +51,8 @@ typedef int fixed_t;
  * killough 9/05/98: better code seems to be gotten from using inlined C
  */
 
-#if ((defined _MSC_VER) && (defined I386_ASM))
+#ifdef _MSC_VER
+# ifdef I386_ASM
 #pragma warning( disable : 4035 )
 __inline static int D_abs(int x)
 {
@@ -64,9 +64,21 @@ __inline static int D_abs(int x)
         sub eax,edx
     }
 }
-#else
-#define D_abs(x) ({fixed_t _t = (x), _s = _t >> (8*sizeof _t-1); (_t^_s)-_s;})
-#endif
+#pragma warning( default : 4035 )
+# else /* I386_asm */
+__inline static int D_abs(int x)
+{
+    if (x>0)
+        return x;
+    else
+        return -x;
+}
+# endif /* I386_asm */
+#else /* _MSC_VER */
+# ifdef I386
+#  define D_abs(x) ({fixed_t _t = (x), _s = _t >> (8*sizeof _t-1); (_t^_s)-_s;})
+# endif /* I386 */
+#endif /* _MSC_VER */
 
 /*
  * Fixed Point Multiplication
@@ -115,8 +127,13 @@ static const fixed_t FixedMul(fixed_t a, fixed_t b)
 
 /* CPhipps - made __inline__ to inline, as specified in the gcc docs
  * Also made const */
-
-inline static const fixed_t FixedMul(fixed_t a, fixed_t b)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static const fixed_t FixedMul(fixed_t a, fixed_t b)
 {
   return (fixed_t)((int_64_t) a*b >> FRACBITS);
 }
@@ -178,8 +195,13 @@ static const fixed_t FixedDiv(fixed_t a, fixed_t b)
 #else /* I386_ASM */
 /* CPhipps - made __inline__ to inline, as specified in the gcc docs
  * Also made const */
-
-inline static const fixed_t FixedDiv(fixed_t a, fixed_t b)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static const fixed_t FixedDiv(fixed_t a, fixed_t b)
 {
   return (D_abs(a)>>14) >= D_abs(b) ? ((a^b)>>31) ^ INT_MAX :
     (fixed_t)(((int_64_t) a << FRACBITS) / b);
@@ -191,8 +213,13 @@ inline static const fixed_t FixedDiv(fixed_t a, fixed_t b)
  * FixedMod - returns a % b, guaranteeing 0<=a<b
  * (notice that the C standard for % does not guarantee this)
  */
-
-inline static const fixed_t FixedMod(fixed_t a, fixed_t b)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static const fixed_t FixedMod(fixed_t a, fixed_t b)
 {
   if (b & (b-1)) {
     fixed_t r = a % b;

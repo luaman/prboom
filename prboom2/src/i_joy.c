@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_joy.c,v 1.3 2000/09/16 20:20:36 proff_fs Exp $
+ * $Id: i_joy.c,v 1.1.1.1 2000/09/20 09:40:59 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -32,7 +32,7 @@
  */
 
 #ifndef lint
-static const char rcsid[] = "$Id: i_joy.c,v 1.3 2000/09/16 20:20:36 proff_fs Exp $";
+static const char rcsid[] = "$Id: i_joy.c,v 1.1.1.1 2000/09/20 09:40:59 figgi Exp $";
 #endif /* lint */
 
 #include "doomdef.h"

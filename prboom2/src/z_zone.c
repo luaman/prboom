@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: z_zone.c,v 1.9 2000/11/12 14:59:29 cph Exp $
+ * $Id: z_zone.c,v 1.1.1.2 2000/09/20 09:46:30 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -39,7 +39,7 @@
  *-----------------------------------------------------------------------------
  */
 
-static const char rcsid[] = "$Id: z_zone.c,v 1.9 2000/11/12 14:59:29 cph Exp $";
+static const char rcsid[] = "$Id: z_zone.c,v 1.1.1.2 2000/09/20 09:46:30 figgi Exp $";
 
 // use config.h if autoconf made one -- josh
 #ifdef HAVE_CONFIG_H
@@ -76,14 +76,7 @@ static const char rcsid[] = "$Id: z_zone.c,v 1.9 2000/11/12 14:59:29 cph Exp $";
 #define LEAVE_ASIDE (128*1024)
 
 // Minimum RAM machine is assumed to have
-  /* cph - Select zone size. 6megs is usable, but with the SDL version 
-   * storing sounds in the zone, 8 is more sensible */
-#ifndef GL_DOOM
-#define MIN_RAM (8*1024*1024)
-#else
-  /* proff - OpenGL needs even more ram at least 16megs are allocated */
-#define MIN_RAM (16*1024*1024)
-#endif
+#define MIN_RAM (4*1024*1024)
 
 // Amount to subtract when retrying failed attempts to allocate initial pool
 #define RETRY_AMOUNT (256*1024)
@@ -252,7 +245,9 @@ void Z_Init(void)
 #ifdef DJGPP
   size_t size = _go32_dpmi_remaining_physical_memory();    // Get free RAM
 #else
-  size_t size = MIN_RAM;
+  /* cph - Select zone size. 6megs is usable, but with the SDL version 
+   * storing sounds in the zone, 8 is more sensible */
+  size_t size = MIN_RAM*2; 
   {  /* cph - allow -heapsize or -heapkb parameters */
     int p;
     if ((p=M_CheckParm("-heapsize")))
@@ -273,7 +268,7 @@ void Z_Init(void)
 
 #ifdef INSTRUMENTED
   if (!(HEADER_SIZE >= sizeof(memblock_t) && MIN_RAM > LEAVE_ASIDE)) 
-    I_Error("Z_Init: Sanity check failed");
+    I_Error("Z_Init: sanity check failed!");
 #endif
 
   atexit(Z_Close);            // exit handler
@@ -285,7 +280,7 @@ void Z_Init(void)
   while (!(zonebase=(malloc)(zonebase_size=size + HEADER_SIZE + CACHE_ALIGN)))
     if (size < (MIN_RAM-LEAVE_ASIDE < RETRY_AMOUNT ? RETRY_AMOUNT :
                                                      MIN_RAM-LEAVE_ASIDE))
-      I_Error("Z_Init: Failed on allocation of %lu bytes",(unsigned long)
+      I_Error("Z_Init: failed on allocation of %lu bytes",(unsigned long)
               zonebase_size);
     else
       size -= RETRY_AMOUNT;
@@ -349,7 +344,7 @@ void *(Z_Malloc)(size_t size, int tag, void **user
 
 #ifdef ZONEIDCHECK
   if (tag >= PU_PURGELEVEL && !user)
-    I_Error ("Z_Malloc: An owner is required for purgable blocks"
+    I_Error ("Z_Malloc: an owner is required for purgable blocks\n"
 #ifdef INSTRUMENTED
              "Source: %s:%d", file, line
 #endif
@@ -518,9 +513,9 @@ void (Z_Free)(void *p
 
 #ifdef ZONEIDCHECK
       if (block->id != ZONEID)
-        I_Error("Z_Free: freed a pointer without ZONEID"
+        I_Error("Z_Free: freed a pointer without ZONEID\n"
 #ifdef INSTRUMENTED
-                "\nSource: %s:%d"
+                "Source: %s:%d"
                 "\nSource of malloc: %s:%d"
                 , file, line, block->file, block->line
 #endif
@@ -648,9 +643,9 @@ void (Z_FreeTags)(int lowtag, int hightag
 
 #ifdef ZONEIDCHECK
         if (block->id != ZONEID)
-          I_Error("Z_Free: freed a pointer without ZONEID"
+          I_Error("Z_Free: freed a pointer without ZONEID\n"
 #ifdef INSTRUMENTED
-                  "\nSource: %s:%d"
+                  "Source: %s:%d"
                   "\nSource of malloc: %s:%d"
                   , file, line, block->file, block->line
 #endif

@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: d_main.c,v 1.31 2000/11/27 17:50:40 proff_fs Exp $
+ * $Id: d_main.c,v 1.1.1.2 2000/09/20 09:40:06 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -34,7 +34,7 @@
  *-----------------------------------------------------------------------------
  */
 
-static const char rcsid[] = "$Id: d_main.c,v 1.31 2000/11/27 17:50:40 proff_fs Exp $";
+static const char rcsid[] = "$Id: d_main.c,v 1.1.1.2 2000/09/20 09:40:06 figgi Exp $";
 
 #ifdef _MSC_VER
 #define    F_OK    0    /* Check for file existence */
@@ -613,7 +613,7 @@ char *D_DoomExeDir(void)
   if (!base)        // cache multiple requests
     {
       size_t len = strlen(*myargv);
-      char *p = (base = malloc(len+1)) + len - 1;
+      char *p = (base = malloc(len+1)) + len;
       strcpy(base,*myargv);
       while (p > base && *p!='/' && *p!='\\')
         *p--=0;
@@ -727,10 +727,10 @@ static void CheckIWAD(const char *iwadname,GameMode_t *gmode,boolean *hassec)
         free(fileinfo);
       }
       else // missing IWAD tag in header
-        I_Error("CheckIWAD: IWAD tag %s not present", iwadname);
+        I_Error("IWAD tag not present: %s\n",iwadname);
     }
     else // error from open call
-      I_Error("CheckIWAD: Can't open IWAD %s", iwadname);
+      I_Error("Can't open IWAD: %s\n",iwadname);
 
     // Determine game mode from levels present
     // Must be a full set for whichever mode is present
@@ -751,11 +751,10 @@ static void CheckIWAD(const char *iwadname,GameMode_t *gmode,boolean *hassec)
       *gmode = shareware;
   }
   else // error from access call
-    I_Error("CheckIWAD: IWAD %s not readable", iwadname);
+    I_Error("IWAD not readable: %s\n",iwadname);
 }
 
-
-
+//
 // NormalizeSlashes
 //
 // Remove trailing slashes, translate backslashes to slashes
@@ -846,7 +845,7 @@ static char* FindWADFile(const char* wfname, const char* ext)
   /* Precalculate a length we will need in the loop */
   size_t	pl = strlen(wfname) + strlen(ext) + 4;
 
-  for (i=0; i<8; i++) {
+  for (i=0; i<6; i++) {
     char	*	p;
     const char	*	d = NULL;
     const char	*	s = NULL;
@@ -857,25 +856,20 @@ static char* FindWADFile(const char* wfname, const char* ext)
       if (!(d = getenv("DOOMWADDIR"))) continue;
     case 0:
       break;
-    case 2:
-      d = DOOMWADDIR;
-      break;
-    case 4:
+    case 3:
       d = "/usr/share/games/doom";
       break;
-    case 5:
+    case 4:
       d = "/usr/local/share/games/doom";
       break;
-    case 6:
-      d = D_DoomExeDir();
-    case 3:
+    case 2:
       s = "doom";
-    case 7:
+    case 5:
       if (!(d = getenv("HOME"))) continue;
       break;
 #ifdef SIMPLECHECKS
     default:
-      I_Error("FindWADFile: Internal failure");
+      I_Error("FindWADFile: internal failure");
 #endif
     }
 
@@ -945,11 +939,7 @@ void IdentifyVersion (void)
   char *iwad;
 
   // get config file from same directory as executable
-#ifdef GL_DOOM
-  sprintf(basedefault,"%s/glboom.cfg", D_DoomExeDir());  // killough
-#else
-  sprintf(basedefault,"%s/prboom.cfg", D_DoomExeDir());  // killough
-#endif
+  sprintf(basedefault,"%s/boom.cfg", D_DoomExeDir());  // killough
 
   // set save path to -save parm or current dir
 
@@ -1029,12 +1019,11 @@ void IdentifyVersion (void)
     free(iwad);
   }
   else
-    I_Error("IdentifyVersion: IWAD not found\n");
+    I_Error("IWAD not found\n");
 }
 
-
-
 // killough 5/3/98: old code removed
+
 //
 // Find a Response File
 //
@@ -1278,7 +1267,7 @@ void DoLooseFiles(void)
 }
 
 /* cph - MBF-like wad/deh/bex autoload code */
-const char *wad_files[MAXLOADFILES], *deh_files[MAXLOADFILES];
+char *wad_files[MAXLOADFILES], *deh_files[MAXLOADFILES];
 
 // CPhipps - misc screen stuff
 unsigned int desired_screenwidth, desired_screenheight;
@@ -1356,7 +1345,7 @@ void D_DoomMainSetup(void)
             {
               AddDefaultExtension(strcpy(file, myargv[p]), ".deh");
               if (access(file, F_OK))  // still nope
-                I_Error("D_DoomMainSetup: Cannot find .deh or .bex file named %s",myargv[p]);
+                I_Error("Cannot find .deh or .bex file named %s",myargv[p]);
             }
           // during the beta we have debug output to dehout.txt
           ProcessDehFile(file,D_dehout(),0);
@@ -1588,7 +1577,7 @@ void D_DoomMainSetup(void)
     int i;
 
     for (i=0; i<MAXLOADFILES*2; i++) {
-      const char *fname = (i < MAXLOADFILES) ? wad_files[i] 
+      char *fname = (i < MAXLOADFILES) ? wad_files[i] 
 	: deh_files[i - MAXLOADFILES];
       char *fpath;
 

@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: am_map.c,v 1.11 2000/11/19 20:24:10 proff_fs Exp $
+ * $Id: am_map.c,v 1.1.1.2 2000/09/20 09:39:32 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -32,7 +32,7 @@
  */
 
 static const char rcsid[] =
-  "$Id: am_map.c,v 1.11 2000/11/19 20:24:10 proff_fs Exp $";
+  "$Id: am_map.c,v 1.1.1.2 2000/09/20 09:39:32 figgi Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -1257,42 +1257,9 @@ void AM_drawWalls(void)
     {
       if ((lines[i].flags & ML_DONTDRAW) && !ddt_cheating)
         continue;
+      if (!lines[i].backsector)
       {
-        /* cph - show keyed doors and lines */
-        int amd;
-        if ((mapcolor_bdor || mapcolor_ydor || mapcolor_rdor) &&
-            !(lines[i].flags & ML_SECRET) &&    /* non-secret */
-          (amd = AM_DoorColor(lines[i].special)) != -1
-        )
-        {
-          {
-            switch (amd) /* closed keyed door */
-            {
-              case 1:
-                /*bluekey*/
-                AM_drawMline(&l,
-                  mapcolor_bdor? mapcolor_bdor : mapcolor_cchg);
-                continue;
-              case 2:
-                /*yellowkey*/
-                AM_drawMline(&l,
-                  mapcolor_ydor? mapcolor_ydor : mapcolor_cchg);
-                continue;
-              case 0:
-                /*redkey*/
-                AM_drawMline(&l,
-                  mapcolor_rdor? mapcolor_rdor : mapcolor_cchg);
-                continue;
-              case 3:
-                /*any or all*/
-                AM_drawMline(&l,
-                  mapcolor_clsd? mapcolor_clsd : mapcolor_cchg);
-                continue;
-            }
-          }
-        }
-      }
-      if /* jff 4/23/98 add exit lines to automap */
+        if //jff 4/23/98 add exit lines to automap
         (
           mapcolor_exit &&
           (
@@ -1303,15 +1270,10 @@ void AM_drawWalls(void)
             lines[i].special==124 ||
             lines[i].special==198
           )
-        ) {
-          AM_drawMline(&l, mapcolor_exit); /* exit line */
-          continue;
-        }
-
-      if (!lines[i].backsector)
-      {
+        )
+          AM_drawMline(&l, mapcolor_exit); // exit line
         // jff 1/10/98 add new color for 1S secret sector boundary
-        if (mapcolor_secr && //jff 4/3/98 0 is disable
+        else if (mapcolor_secr && //jff 4/3/98 0 is disable
             (
              (
               map_secret_after &&
@@ -1329,7 +1291,7 @@ void AM_drawWalls(void)
         else                               //jff 2/16/98 fixed bug
           AM_drawMline(&l, mapcolor_wall); // special was cleared
       }
-      else /* now for 2S lines */
+      else
       {
         // jff 1/10/98 add color change for all teleporter types
         if
@@ -1340,6 +1302,58 @@ void AM_drawWalls(void)
         )
         { // teleporters
           AM_drawMline(&l, mapcolor_tele);
+        }
+        else if //jff 4/23/98 add exit lines to automap
+        (
+          mapcolor_exit &&
+          (
+            lines[i].special==11 ||
+            lines[i].special==52 ||
+            lines[i].special==197 ||
+            lines[i].special==51  ||
+            lines[i].special==124 ||
+            lines[i].special==198
+          )
+        )
+          AM_drawMline(&l, mapcolor_exit); // exit line
+        else if //jff 1/5/98 this clause implements showing keyed doors
+        (
+          (mapcolor_bdor || mapcolor_ydor || mapcolor_rdor) &&
+          ((lines[i].special >=26 && lines[i].special <=28) ||
+          (lines[i].special >=32 && lines[i].special <=34) ||
+          (lines[i].special >=133 && lines[i].special <=137) ||
+          lines[i].special == 99 ||
+          (lines[i].special>=GenLockedBase && lines[i].special<GenDoorBase))
+        )
+        {
+          if ((lines[i].backsector->floorheight==lines[i].backsector->ceilingheight) ||
+              (lines[i].frontsector->floorheight==lines[i].frontsector->ceilingheight))
+          {
+            switch (AM_DoorColor(lines[i].special)) // closed keyed door
+            {
+              case 1:
+                /*bluekey*/
+                AM_drawMline(&l,
+                  mapcolor_bdor? mapcolor_bdor : mapcolor_cchg);
+                break;
+              case 2:
+                /*yellowkey*/
+                AM_drawMline(&l,
+                  mapcolor_ydor? mapcolor_ydor : mapcolor_cchg);
+                break;
+              case 0:
+                /*redkey*/
+                AM_drawMline(&l,
+                  mapcolor_rdor? mapcolor_rdor : mapcolor_cchg);
+                break;
+              case 3:
+                /*any or all*/
+                AM_drawMline(&l,
+                  mapcolor_clsd? mapcolor_clsd : mapcolor_cchg);
+                break;
+            }
+          }
+          else AM_drawMline(&l, mapcolor_cchg); // open keyed door
         }
         else if (lines[i].flags & ML_SECRET)    // secret door
         {
@@ -1676,8 +1690,13 @@ void AM_drawMarks(void)
 // Returns nothing
 //
 // CPhipps - made static inline, and use the general pixel plotter function
-
-inline static void AM_drawCrosshair(int color)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static void AM_drawCrosshair(int color)
 {
   // single point for now
 #ifdef GL_DOOM

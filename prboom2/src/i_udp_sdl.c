@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_udp_sdl.c,v 1.8 2000/11/19 20:24:11 proff_fs Exp $
+ * $Id: i_udp_sdl.c,v 1.1.1.1 2000/09/20 09:41:02 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -33,10 +33,10 @@
  *-----------------------------------------------------------------------------*/
 
 #ifdef HAVE_CONFIG_H
-# include "../config.h"
+        #include "../config.h"
 #endif
 #ifdef HAVE_NETINET_IN_H
-# include <netinet/in.h>
+	#include <netinet/in.h>
 #endif
 #include <stdlib.h>
 #include <errno.h>
@@ -46,8 +46,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
-
-#ifdef HAVE_NET
 
 #include "SDL.h"
 #include "SDL_net.h"
@@ -86,7 +84,7 @@ void I_ShutdownNetwork(void)
  */
 void I_InitNetwork()
 {
-	SDLNet_Init();
+	int status = SDLNet_Init();
 	atexit(I_ShutdownNetwork);
 	udp_packet = SDLNet_AllocPacket(10000);
 }
@@ -211,6 +209,7 @@ static byte ChecksumPacket(const packet_header_t* buffer, size_t len)
 {
   const byte* p = (void*)buffer; 
   byte sum = 0;
+  size_t initlen = len;
 
   if (len==0)
     return 0;
@@ -224,7 +223,7 @@ static byte ChecksumPacket(const packet_header_t* buffer, size_t len)
 size_t I_GetPacket(packet_header_t* buffer, size_t buflen)
 {
   int checksum;
-  size_t len;
+  int len;
   int status;
 
 	status = SDLNet_UDP_Recv(udp_socket, udp_packet);
@@ -283,5 +282,3 @@ void I_PrintAddress(FILE* fp, UDP_CHANNEL *addr)
 		fprintf(fp, "Error");
 */
 }
-
-#endif /* HAVE_NET */

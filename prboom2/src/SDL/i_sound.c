@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_sound.c,v 1.15 2000/11/22 21:46:48 proff_fs Exp $
+ * $Id: i_sound.c,v 1.1.1.1 2000/09/20 09:46:38 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -32,7 +32,7 @@
  */
 
 static const char
-rcsid[] = "$Id: i_sound.c,v 1.15 2000/11/22 21:46:48 proff_fs Exp $";
+rcsid[] = "$Id: i_sound.c,v 1.1.1.1 2000/09/20 09:46:38 figgi Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -248,14 +248,17 @@ I_UpdateSoundParams
     // Separation, that is, orientation/stereo.
     //  range is: 1 - 256
     seperation += 1;
+    seperation *= seperation;
 
     // Per left/right channel.
     //  x^2 seperation,
     //  adjust volume properly.
     volume *= 8;
-    leftvol = volume - ((volume*seperation*seperation) >> 16);
+    leftvol =
+	volume - ((volume*seperation) >> 16);
     seperation = seperation - 257;
-    rightvol= volume - ((volume*seperation*seperation) >> 16);	
+    rightvol =
+	volume - ((volume*seperation) >> 16);	
 
     // Sanity check, clamp volume.
     if (rightvol < 0 || rightvol > 127)
@@ -435,7 +438,7 @@ void I_UpdateSound(void *unused, Uint8 *stream, int len)
 
     // Determine end, for left channel only
     //  (right channel is implicit).
-    leftend = leftout + (len/4)*step;
+    leftend = leftout + SAMPLECOUNT*step;
 
     // Mix sounds into the mixing buffer.
     // Loop over step*SAMPLECOUNT,
@@ -528,7 +531,7 @@ I_InitSound()
 
   // Secure and configure sound device first.
   fprintf( stderr, "I_InitSound: ");
-
+ 
   /* Initialize variables */
   audio_rate = SAMPLERATE;
 #if ( SDL_BYTEORDER == SDL_BIG_ENDIAN )
@@ -543,12 +546,9 @@ I_InitSound()
     fprintf(stderr, "couldn't open audio with desired format\n");
     return;
   }
-  SAMPLECOUNT = audio_buffers;
   Mix_SetPostMix(I_UpdateSound, NULL);
   fprintf(stderr, " configured audio device with %d samples/slice\n", SAMPLECOUNT);
 #else
-  SDL_AudioSpec audio;
-
   // Secure and configure sound device first.
   fprintf( stderr, "I_InitSound: ");
   
@@ -688,8 +688,6 @@ int I_RegisterSong(const void *data, size_t len)
   MIDI mididata;
   FILE *midfile;
 
-  if ( music_tmp == NULL )
-    return 0;
   midfile = fopen(music_tmp, "wb");
   if ( midfile == NULL ) {
     lprintf(LO_ERROR,"Couldn't write MIDI to %s\n", music_tmp);
@@ -698,6 +696,7 @@ int I_RegisterSong(const void *data, size_t len)
   /* Convert MUS chunk to MIDI? */
   if ( memcmp(data, "MUS", 3) == 0 )
   {
+    //qmus2mid(data, len, midfile, 1, 0, 0, 0);
     UBYTE *mid;
     int midlen;
 

@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_video.c,v 1.18 2000/11/22 21:46:48 proff_fs Exp $
+ * $Id: i_video.c,v 1.1.1.1 2000/09/20 09:46:40 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -32,7 +32,7 @@
  */
 
 static const char
-rcsid[] = "$Id: i_video.c,v 1.18 2000/11/22 21:46:48 proff_fs Exp $";
+rcsid[] = "$Id: i_video.c,v 1.1.1.1 2000/09/20 09:46:40 figgi Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -45,6 +45,11 @@ rcsid[] = "$Id: i_video.c,v 1.18 2000/11/22 21:46:48 proff_fs Exp $";
 #endif
 
 #include "SDL.h"
+
+#ifdef I386
+void (*R_DrawColumn)(void);
+void (*R_DrawTLColumn)(void);
+#endif
 
 #include "i_system.h"
 #include "m_argv.h"
@@ -62,13 +67,8 @@ rcsid[] = "$Id: i_video.c,v 1.18 2000/11/22 21:46:48 proff_fs Exp $";
 #include "sounds.h"
 #include "w_wad.h"
 #include "lprintf.h"
-
 #ifdef GL_DOOM
 #include "gl_struct.h"
-
-int gl_colorbuffer_bits=16;
-int gl_depthbuffer_bits=16;
-
 #endif
 
 extern void M_QuitDOOM(int choice);
@@ -312,7 +312,13 @@ static void I_InitInputs(void)
 //
 // Returns true if it thinks we can afford to skip this frame
 
-inline static boolean I_SkipFrame(void)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static boolean I_SkipFrame(void)
 {
   static int frameno;
 
@@ -396,9 +402,6 @@ void I_UpdateNoBlit (void)
 //
 // I_FinishUpdate
 //
-static int newpal = 0;
-#define NO_PALETTE_CHANGE 1000
-
 void I_FinishUpdate (void)
 {
   if (I_SkipFrame()) return;
@@ -410,13 +413,8 @@ void I_FinishUpdate (void)
 #endif
   
 #ifndef GL_DOOM
-  /* Update the display buffer (flipping video pages if supported)
-   * If we need to change palette, that implicitely does a flip */
-  if (newpal != NO_PALETTE_CHANGE) { 
-    I_UploadNewPalette(newpal);
-    newpal = NO_PALETTE_CHANGE;
-  } else
-    SDL_Flip(screen);
+  // Update the display buffer (flipping video pages if supported)
+  SDL_Flip(screen);
 #else
   // proff 04/05/2000: swap OpenGL buffers
   gld_Finish();
@@ -436,7 +434,7 @@ void I_ReadScreen (byte* scr)
 //
 void I_SetPalette (int pal)
 {
-  newpal = pal;
+    I_UploadNewPalette(pal);
 }
 
 // I_PreInitGraphics
@@ -463,9 +461,25 @@ void I_PreInitGraphics(void)
 
 void I_SetRes(unsigned int width, unsigned int height)
 {
-  SCREENWIDTH = (width+3) & ~3;
-  SCREENHEIGHT = (height+3) & ~3;
+#ifdef HIGHRES
+  SCREENWIDTH = 
+#endif
+    (width+3) & ~3;
 
+#ifdef HIGHRES
+  SCREENHEIGHT = 
+#endif
+    (height+3) & ~3;
+
+#ifndef GL_DOOM
+  if (SCREENWIDTH == 320) {
+    R_DrawColumn = R_DrawColumn_Normal;
+    R_DrawTLColumn = R_DrawTLColumn_Normal;
+  } else {
+    R_DrawColumn = R_DrawColumn_HighRes;
+    R_DrawTLColumn = R_DrawTLColumn_HighRes;
+  }
+#endif
   lprintf(LO_INFO,"I_SetRes: Using resolution %dx%d\n", SCREENWIDTH, SCREENHEIGHT);
 }
 
@@ -474,9 +488,6 @@ void I_InitGraphics(void)
   int           w, h;
   Uint32        init_flags;
   char titlebuffer[2048];
-#ifdef GL_DOOM
-  int temp;
-#endif
   
   {  
     static int		firsttime=1;
@@ -501,20 +512,10 @@ void I_InitGraphics(void)
     init_flags |= SDL_FULLSCREEN;
   }
 #ifdef GL_DOOM
-  SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_ACCUM_RED_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_ACCUM_GREEN_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_ACCUM_BLUE_SIZE, 0 );
-  SDL_GL_SetAttribute( SDL_GL_ACCUM_ALPHA_SIZE, 0 );
+  SDL_GL_SetAttribute( SDL_GL_BUFFER_SIZE, 16 );
+  SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
   SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-  //SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 0 );
-  SDL_GL_SetAttribute( SDL_GL_BUFFER_SIZE, gl_colorbuffer_bits );
-  SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, gl_depthbuffer_bits );
-  screen = SDL_SetVideoMode(w, h, gl_colorbuffer_bits, init_flags);
+  screen = SDL_SetVideoMode(w, h, 16, init_flags);
 #else
 #ifdef USE_OWN_TRANSLATION_CODE
   if(SDL_VideoModeOK(w, h, 8, init_flags) == 8) { 
@@ -550,29 +551,6 @@ void I_InitGraphics(void)
   I_InitInputs();
 
 #ifdef GL_DOOM
-  lprintf(LO_INFO,"\nSDL OpenGL PixelFormat:\n");
-  SDL_GL_GetAttribute( SDL_GL_RED_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_RED_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_GREEN_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_GREEN_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_BLUE_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_BLUE_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_STENCIL_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_STENCIL_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_ACCUM_RED_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_ACCUM_RED_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_ACCUM_GREEN_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_ACCUM_GREEN_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_ACCUM_BLUE_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_ACCUM_BLUE_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_ACCUM_ALPHA_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_ACCUM_ALPHA_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_DOUBLEBUFFER, &temp );
-  lprintf(LO_INFO,"    SDL_GL_DOUBLEBUFFER: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_BUFFER_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_BUFFER_SIZE: %i\n",temp);
-  SDL_GL_GetAttribute( SDL_GL_DEPTH_SIZE, &temp );
-  lprintf(LO_INFO,"    SDL_GL_DEPTH_SIZE: %i\n",temp);
   gld_Init(SCREENWIDTH, SCREENHEIGHT);
 #endif
   // Hide pointer while over this window

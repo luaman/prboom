@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: v_video.c,v 1.15 2000/11/22 21:46:48 proff_fs Exp $
+ * $Id: v_video.c,v 1.1.1.2 2000/09/20 09:45:47 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -35,7 +35,7 @@
  */
 
 static const char
-rcsid[] = "$Id: v_video.c,v 1.15 2000/11/22 21:46:48 proff_fs Exp $";
+rcsid[] = "$Id: v_video.c,v 1.1.1.2 2000/09/20 09:45:47 figgi Exp $";
 
 #include "doomdef.h"
 #include "r_main.h"
@@ -237,7 +237,7 @@ void V_CopyRect(int srcx, int srcy, int srcscrn, int width,
       ||destx<0||destx+width >SCREENWIDTH
       || desty<0
       || desty+height>SCREENHEIGHT)
-    I_Error ("V_CopyRect: Bad arguments");
+    I_Error ("Bad V_CopyRect");
 #endif
 
   V_MarkRect (destx, desty, width, height);
@@ -280,10 +280,10 @@ void V_DrawBlock(int x, int y, int scrn, int width, int height,
       ||x+width >((flags & VPT_STRETCH) ? 320 : SCREENWIDTH)
       || y<0
       || y+height>((flags & VPT_STRETCH) ? 200 : SCREENHEIGHT))
-    I_Error ("V_DrawBlock: Bad V_DrawBlock");
+    I_Error ("Bad V_DrawBlock");
 
   if (flags & (VPT_TRANS | VPT_FLIP))
-    I_Error("V_DrawBlock: Unsupported flags (%u)", flags);
+    I_Error("Bad V_DrawBlock (flags=%u)",flags);
 #endif
 
   if (flags & VPT_STRETCH) {
@@ -369,7 +369,7 @@ void V_GetBlock(int x, int y, int scrn, int width, int height, byte *dest)
       ||x+width >SCREENWIDTH
       || y<0
       || y+height>SCREENHEIGHT)
-    I_Error ("V_GetBlock: Bad arguments");
+    I_Error ("Bad V_GetBlock");
 #endif
 
   src = screens[scrn] + y*SCREENWIDTH+x;
@@ -431,10 +431,12 @@ void V_DrawMemPatch(int x, int y, int scrn, const patch_t *patch,
   y -= SHORT(patch->topoffset);
   x -= SHORT(patch->leftoffset);
 
+#ifdef HIGHRES
   // CPhipps - auto-no-stretch if not high-res
   if (flags & VPT_STRETCH)
     if ((SCREENWIDTH==320) && (SCREENHEIGHT==200))
       flags &= ~VPT_STRETCH;
+#endif
 
   // CPhipps - null translation pointer => no translation
   if (!trans)
@@ -446,7 +448,7 @@ void V_DrawMemPatch(int x, int y, int scrn, const patch_t *patch,
       || y<0
       || y+SHORT(patch->height) > ((flags & VPT_STRETCH) ? 200 :  SCREENHEIGHT))
     // killough 1/19/98: improved error message:
-    I_Error("V_DrawMemPatch: Patch origin %d,%d exceeds LFB"
+    I_Error("Patch origin %d,%d exceeds LFB\n"
             "Bad V_DrawMemPatch (flags=%u)", x, y, flags);
 #endif
 
@@ -526,6 +528,7 @@ void V_DrawMemPatch(int x, int y, int scrn, const patch_t *patch,
       }
     }
   }  
+#ifdef HIGHRES
   else {
     // CPhipps - move stretched patch drawing code here
     //         - reformat initialisers, move variables into inner blocks
@@ -580,6 +583,7 @@ void V_DrawMemPatch(int x, int y, int scrn, const patch_t *patch,
       }
     }
   }
+#endif
 }
 #endif // GL_DOOM
 
@@ -588,7 +592,7 @@ void V_DrawMemPatch(int x, int y, int scrn, const patch_t *patch,
 // CPhipps - GNU C only suppresses generating a copy of a function if it is 
 // static inline; other compilers have different behaviour.
 // This inline is _only_ for the function below
-
+// Proff - added __inline for VisualC
 #ifndef GL_DOOM
 #ifdef __GNUC__
 inline

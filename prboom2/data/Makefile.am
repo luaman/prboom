@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.2 2000/05/18 09:36:11 cph Exp $
+# $Id: Makefile.am,v 1.1.1.2 2000/09/20 09:39:01 figgi Exp $
 #
 # Install boomlump.wad to /usr/local/share/doom
 #
@@ -10,6 +10,10 @@ EXTRA_DIST=prboom.wad
 
 #
 # $Log: Makefile.am,v $
+# Revision 1.1.1.2  2000/09/20 09:39:01  figgi
+#
+# added glBsp support
+#
 # Revision 1.2  2000/05/18 09:36:11  cph
 # Import new data WAD with Boom, MBF and PrBoom stuff
 #

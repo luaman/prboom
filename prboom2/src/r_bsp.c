@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: r_bsp.c,v 1.20 2000/10/08 18:42:20 proff_fs Exp $
+ * $Id: r_bsp.c,v 1.1.1.2 2000/09/20 09:45:19 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -31,7 +31,7 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: r_bsp.c,v 1.20 2000/10/08 18:42:20 proff_fs Exp $";
+rcsid[] = "$Id: r_bsp.c,v 1.1.1.2 2000/09/20 09:45:19 figgi Exp $";
 
 #include "doomstat.h"
 #include "m_bbox.h"
@@ -374,7 +374,6 @@ static void R_AddLine (seg_t *line)
       }
       ds_p->curline = curline;
       ds_p++;
-      gld_AddWall(curline);
       return;
     }
   }
@@ -495,7 +494,7 @@ static boolean R_CheckBBox(const fixed_t *bspcoord)
 
 static void R_Subsector(int num)
 {
-  int         count;
+  int         count, i;
   seg_t       *line;
   subsector_t *sub;
   sector_t    tempsec;              // killough 3/7/98: deep water hack
@@ -623,15 +622,22 @@ static void R_Subsector(int num)
   // real sector, or you must account for the lighting in some other way, 
   // like passing it as an argument.
 
-  R_AddSprites(sub, (floorlightlevel+ceilinglightlevel)/2);
-  while (count--)
-  {
-    if (line->miniseg == false)
-      R_AddLine (line);
-    line++;
-  }
+  R_AddSprites(sub->sector, (floorlightlevel+ceilinglightlevel)/2);
+
 #ifdef GL_DOOM
-  gld_AddPlane(num, floorplane, ceilingplane);
+   // figgi -- fix for glBsp 
+ for (i = 0; i < sub->numlines; i++)
+ {
+	if (sub->segs[i].miniseg == false)
+		R_AddLine (&sub->segs[i]);
+ }
+#else
+  while (count--)
+    R_AddLine (line++);
+#endif
+
+#ifdef GL_DOOM
+  gld_DrawPlane(sub->sector, floorplane, ceilingplane);
 #endif
 }
 

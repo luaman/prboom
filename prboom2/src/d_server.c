@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: d_server.c,v 1.13 2000/11/25 19:19:17 cph Exp $
+ * $Id: d_server.c,v 1.1.1.2 2000/09/20 09:40:10 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -194,9 +194,10 @@ char** myargv;
 
 void I_Error(const char *error, ...) // killough 3/20/98: add const
 {
+  char errmsg[1000];
   va_list argptr;
   va_start(argptr,error);
-  vfprintf(stderr,error,argptr);
+  vsnprintf(errmsg,sizeof(errmsg),error,argptr);
   va_end(argptr);
   exit(-1);
 }
@@ -357,7 +358,7 @@ int main(int argc, char** argv)
 
     // Print wads
     for (i=0; i<numwads; i++)
-      printf("Wad %s (%s)\n", wadname[i], wadget[i] ? wadget[i] : "");
+      printf("Wad %s (%s)\n", wadname[i], wadget[i]);
   }
 
   // Exit and signal handling
@@ -392,6 +393,7 @@ int main(int argc, char** argv)
 	      {
 		int n;
 		struct setup_packet_s *sinfo = (void*)(packet+1);
+		const char *rname = (void*)((short*)(packet+1)+1);
 
 		/* Find player number and add to the game */
 		n = *(short*)(packet+1);
@@ -409,7 +411,8 @@ int main(int argc, char** argv)
       remoteaddr[n]=I_RegisterPlayer(&sentfrom_addr);
 #endif
 
-		printf("Join by ");
+		if (!memchr(rname,0,1000)) rname = "Invalid";
+		printf("Join by %s ", rname);
 		I_PrintAddress(stdout, &remoteaddr[n]);
 		putc('\n', stdout);
 		{

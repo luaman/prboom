@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: protocol.h,v 1.5 2000/11/25 18:22:09 cph Exp $
+ * $Id: protocol.h,v 1.1.1.2 2000/09/20 09:45:14 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -64,12 +64,15 @@ struct setup_packet_s {
   byte wadnames[1]; // Actually longer
 };
 
-inline static void GetTicSwap(ticcmd_t* dst, const ticcmd_t* src)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static void GetTicSwap(ticcmd_t* dst, const ticcmd_t* src)
 {
-  dst->forwardmove = src->forwardmove;
-  dst->sidemove = src->sidemove;
-  dst->angleturn = doom_ntohs(src->angleturn);
-  dst->consistancy = doom_ntohs(src->consistancy);
-  dst->chatchar = src->chatchar;
-  dst->buttons = src->buttons;
+  *dst = *src;
+  dst->angleturn = doom_ntohs(dst->angleturn);
+  dst->consistancy = doom_ntohs(dst->consistancy);
 }

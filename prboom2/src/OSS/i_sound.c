@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_sound.c,v 1.2 2000/05/09 21:45:40 proff_fs Exp $
+ * $Id: i_sound.c,v 1.1.1.1 2000/09/20 09:46:32 figgi Exp $
  *
  *  Sound interface from the original linuxdoom, extensively modified
  *  for LxDoom, a Doom port for Linux/Unix
@@ -31,7 +31,7 @@
  */
 
 static const char
-rcsid[] = "$Id: i_sound.c,v 1.2 2000/05/09 21:45:40 proff_fs Exp $";
+rcsid[] = "$Id: i_sound.c,v 1.1.1.1 2000/09/20 09:46:32 figgi Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"

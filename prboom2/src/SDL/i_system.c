@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_system.c,v 1.6 2000/09/16 20:20:45 proff_fs Exp $
+ * $Id: i_system.c,v 1.1.1.1 2000/09/20 09:46:38 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -33,7 +33,7 @@
  */
 
 static const char
-rcsid[] = "$Id: i_system.c,v 1.6 2000/09/16 20:20:45 proff_fs Exp $";
+rcsid[] = "$Id: i_system.c,v 1.1.1.1 2000/09/20 09:46:38 figgi Exp $";
 
 #include <stdio.h>
 

@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: v_video.h,v 1.11 2000/11/19 20:24:11 proff_fs Exp $
+ * $Id: v_video.h,v 1.1.1.2 2000/09/20 09:45:48 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -172,6 +172,7 @@ byte *V_PatchToBlock(const char* name, int cm,
 void V_SetPalette(int pal);
 
 // CPhipps - function to plot a pixel
+// Proff - added __inline for VisualC
 
 #ifndef GL_DOOM
 #define V_PlotPixel(s,x,y,c) screens[s][x+SCREENWIDTH*y]=c

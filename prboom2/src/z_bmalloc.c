@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: z_bmalloc.c,v 1.8 2000/11/19 20:24:11 proff_fs Exp $
+ * $Id: z_bmalloc.c,v 1.1.1.2 2000/09/20 09:46:14 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -47,12 +47,24 @@ typedef struct bmalpool_s {
   byte               used[0];
 } bmalpool_t;
 
-inline static void* getelem(bmalpool_t *p, size_t size, size_t n)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static void* getelem(bmalpool_t *p, size_t size, size_t n)
 {
   return (((byte*)p) + sizeof(bmalpool_t) + sizeof(byte)*(p->blocks) + size*n);
 }
 
-inline static const int iselem(const bmalpool_t *pool, size_t size, const void* p)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static const int iselem(const bmalpool_t *pool, size_t size, const void* p)
 {
   // CPhipps - need portable # of bytes between pointers
   int dif = (const char*)p - (const char*)pool;
@@ -75,7 +87,7 @@ void* Z_BMalloc(struct block_memory_alloc_s *pzone)
       int n = p - (*pool)->used;
 #ifdef SIMPLECHECKS
       if ((n<0) || ((size_t)n>=(*pool)->blocks)) 
-	I_Error("Z_BMalloc: memchr returned pointer outside of array");
+	I_Error("Z_BMalloc: memchr returned pointer outside of array!");
 #endif
       (*pool)->used[n] = used_block;
       return getelem(*pool, pzone->size, n);
@@ -108,7 +120,7 @@ void Z_BFree(struct block_memory_alloc_s *pzone, void* p)
     if (n >= 0) {
 #ifdef SIMPLECHECKS
       if ((*pool)->used[n] == unused_block)
-	I_Error("Z_BFree: Refree in zone %s", pzone->desc);
+	I_Error("Z_BFree: refree in zone %s\n", pzone->desc);
 #endif
       (*pool)->used[n] = unused_block;
       if (memchr(((*pool)->used), used_block, (*pool)->blocks) == NULL) {
@@ -120,5 +132,5 @@ void Z_BFree(struct block_memory_alloc_s *pzone, void* p)
       return;
     } else pool = &((*pool)->nextpool);
   }
-  I_Error("Z_BFree: Free not in zone %s", pzone->desc);
+  I_Error("Z_BFree: free not in zone %s\n", pzone->desc);
 }

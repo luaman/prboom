@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_main.c,v 1.10 2000/11/19 20:24:11 proff_fs Exp $
+ * $Id: i_main.c,v 1.1.1.1 2000/09/20 09:41:01 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -34,7 +34,7 @@
  */
 
 static const char
-rcsid[] = "$Id: i_main.c,v 1.10 2000/11/19 20:24:11 proff_fs Exp $";
+rcsid[] = "$Id: i_main.c,v 1.1.1.1 2000/09/20 09:41:01 figgi Exp $";
 
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
@@ -81,23 +81,17 @@ static int I_GetTime_Scaled(void)
   return (int)( (int_64_t) I_GetTime_RealTime() * I_GetTime_Scale >> 24);
 }
 
-
-
 static int  I_GetTime_FastDemo(void)
 {
   static int fasttic;
   return fasttic++;
 }
 
-
-
 static int I_GetTime_Error(void)
 {
-  I_Error("I_GetTime_Error: GetTime() used before initialization");
+  I_Error("Error: GetTime() used before initialization");
   return 0;
 }
-
-
 
 int (*I_GetTime)(void) = I_GetTime_Error;
 
@@ -148,10 +142,8 @@ static void I_SignalHandler(int s)
   if (s==SIGSEGV || s==SIGILL || s==SIGFPE)
     Z_DumpHistory(buf);
 
-  I_Error("I_SignalHandler: %s", buf);
+  I_Error("%s",buf);
 }
-
-
 
 /* killough 2/22/98: Add support for ENDBOOM, which is PC-specific
  *
@@ -160,7 +152,13 @@ static void I_SignalHandler(int s)
  * CPhipps - made static
  */
 
-inline static int convert(int color, int *bold)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static int convert(int color, int *bold)
 {
   if (color > 7) {
     color -= 8;
@@ -242,7 +240,7 @@ static void I_EndDoom(void)
     int i, l = W_LumpLength(lump) / 2;
 
     /* cph - colour ENDOOM by rain */
-    int oldbg = -1, oldcolor = -1, bold = 0, oldbold = -1, color = 0;
+    int oldbg = 0, oldcolor = 7, bold = 0, oldbold = 0, color = 0;
 #ifndef _WIN32
     if (endoom_mode & endoom_nonasciichars)
 	    /* switch to secondary charset, and set to cp437 (IBM charset) */
@@ -265,8 +263,8 @@ static void I_EndDoom(void)
         if (!(i % 80))
         {
           /* reset everything when we start a new line */
-          oldbg = -1;
-          oldcolor = -1;
+          oldbg = 0;
+          oldcolor = 7;
           printf("\e[0m\n");
         }
         /* foreground color */
@@ -279,11 +277,10 @@ static void I_EndDoom(void)
           if (oldbold != bold)
           {
 	          oldbold = bold;
-		  printf("\e[%cm", bold + '0');
-		  if (!bold) oldbg = -1;
+	          oldbg = 0;
           }
           /* we buffer everything or output is horrendously slow */
-          printf("\e[%dm", color + 30);
+          printf("\e[%d;%dm", bold, color + 30);
           bold = 0;
         }
         /* background color */

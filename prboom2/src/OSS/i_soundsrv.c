@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_soundsrv.c,v 1.2 2000/05/09 21:45:40 proff_fs Exp $
+ * $Id: i_soundsrv.c,v 1.1.1.1 2000/09/20 09:46:35 figgi Exp $
  *
  *  Sound server for LxDoom, based on the sound server released with the 
  *   original linuxdoom sources.
@@ -32,7 +32,7 @@
  */
 
 static const char
-rcsid[] = "$Id: i_soundsrv.c,v 1.2 2000/05/09 21:45:40 proff_fs Exp $";
+rcsid[] = "$Id: i_soundsrv.c,v 1.1.1.1 2000/09/20 09:46:35 figgi Exp $";
 
 #include <stdio.h>
 #include <stddef.h>

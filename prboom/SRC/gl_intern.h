@@ -1,7 +1,7 @@
 // Emacs style mode select   -*- C++ -*- 
 //-----------------------------------------------------------------------------
 //
-// $Id: gl_intern.h,v 1.4 2000/04/30 15:28:24 proff_fs Exp $
+// $Id: gl_intern.h,v 1.1 2000/04/09 18:21:09 proff_fs Exp $
 //
 //  PRBOOM/GLBOOM (C) Florian 'Proff' Schulze (florian.proff.schulze@gmx.net)
 //  based on
@@ -34,9 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
-#include "SDL.h"
-#include "gl/gl.h"
-#include "gl/glu.h"
+#include "opengl.h"
 #include "w_wad.h"
 #include "m_argv.h"
 #include "z_zone.h"
@@ -59,7 +57,6 @@ typedef struct
 	int iLump;
 	H_boolean bFlip;
 	float fLightLevel;
-	H_boolean rendered;
 	mobj_t *p_Obj;
 } GLSprite;
 
@@ -80,23 +77,3 @@ GLTexture *gld_RegisterTexture(int texture_num);
 
 void gld_OutputLevelInfo(void);
 #endif // _GL_INTERN_H
-
-//-----------------------------------------------------------------------------
-//
-// $Log: gl_intern.h,v $
-// Revision 1.4  2000/04/30 15:28:24  proff_fs
-// fixed the OpenGL middle-texture alignment bug
-//
-// Revision 1.3  2000/04/26 20:00:03  proff_fs
-// now using SDL for video and sound output.
-// sound output is currently mono only.
-// Get SDL from:
-// http://www.devolution.com/~slouken/SDL/
-//
-// Revision 1.2  2000/04/10 21:13:13  proff_fs
-// added Log to OpenGL files
-//
-// Revision 1.1.1.1  2000/04/09 18:21:44  proff_fs
-// Initial login
-//
-//-----------------------------------------------------------------------------

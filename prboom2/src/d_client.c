@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: d_client.c,v 1.10 2000/11/29 19:42:20 cph Exp $
+ * $Id: d_client.c,v 1.1.1.2 2000/09/20 09:39:36 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -94,7 +94,7 @@ void D_InitNetGame (void)
     // Get game info from server
     packet_header_t *packet = Z_Malloc(1000, PU_STATIC, NULL);
     struct setup_packet_s *sinfo = (void*)(packet+1);
-  struct { packet_header_t head; short pn; } initpacket;
+  struct { packet_header_t head; short pn; char myaddr[200]; } initpacket;
 
     I_InitNetwork();
   udp_socket = I_Socket(0);
@@ -254,13 +254,13 @@ void NetUpdate(void)
 	{
 	  byte *p = (void*)(packet+1);
 	  int tics = *p++;
-	  if (packet->tic > (unsigned)remotetic) { // Missed some
+	  if (packet->tic > remotetic) { // Missed some
 	    packet->type = PKT_RETRANS;
 	    packet->tic = remotetic;
 	    *(byte*)(packet+1) = consoleplayer;
 	    I_SendPacket(packet, sizeof(*packet)+1);
 	  } else {
-	    if (packet->tic + tics <= (unsigned)remotetic) break; // Will not improve things
+	    if (packet->tic + tics <= remotetic) break; // Will not improve things
 	    remotetic = packet->tic;
 	    while (tics--) {
 	      int players = *p++;
@@ -352,7 +352,6 @@ void D_BuildNewTiccmds()
 }
 
 #ifdef HAVE_NET
-/* cph - data passed to this must be in the Doom (little-) endian */
 void D_NetSendMisc(netmisctype_t type, size_t len, void* data) 
 {
   if (server) {
@@ -362,7 +361,7 @@ void D_NetSendMisc(netmisctype_t type, size_t len, void* data)
     
     packet->tic = gametic;
     packet->type = PKT_EXTRA;
-    *p++ = LONG(type); *p++ = LONG(consoleplayer); *p++ = LONG(len);
+    *p++ = type; *p++ = consoleplayer; *p++ = len;
     memcpy(p, data, len);
     I_SendPacket(packet, size);
     
@@ -373,8 +372,8 @@ void D_NetSendMisc(netmisctype_t type, size_t len, void* data)
 static void CheckQueuedPackets(void)
 {
   int i;
-  for (i=0; (unsigned)i<numqueuedpackets; i++)
-    if (queuedpacket[i]->tic <= (unsigned)gametic)
+  for (i=0; i<numqueuedpackets; i++)
+    if (queuedpacket[i]->tic <= gametic)
       switch (queuedpacket[i]->type) {
       case PKT_QUIT: // Player quit the game
 	{
@@ -387,7 +386,7 @@ static void CheckQueuedPackets(void)
 	{
 	  int *p = (int*)(queuedpacket[i]+1);
 	  size_t len = LONG(*(p+2));
-	  switch (LONG(*p)) {
+	  switch (*p) {
 	  case nm_plcolour:
 	    G_ChangedPlayerColour(LONG(*(p+1)), LONG(*(p+3)));
 	    break;
@@ -409,8 +408,8 @@ static void CheckQueuedPackets(void)
     int newnum = 0;
     packet_header_t **newqueue = NULL;
 
-    for (i=0; (unsigned)i<numqueuedpackets; i++)
-      if (queuedpacket[i]->tic > (unsigned)gametic) {
+    for (i=0; i<numqueuedpackets; i++)
+      if (queuedpacket[i]->tic > gametic) {
 	newqueue = Z_Realloc(newqueue, ++newnum * sizeof *newqueue, 
 			     PU_STATIC, NULL);
 	newqueue[newnum-1] = queuedpacket[i];

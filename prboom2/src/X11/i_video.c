@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: i_video.c,v 1.6 2000/11/22 21:46:48 proff_fs Exp $
+ * $Id: i_video.c,v 1.1.1.1 2000/09/20 09:46:45 figgi Exp $
  *
  *  X11 display code for LxDoom. Based on the original linuxdoom i_video.c
  *  Copyright (C) 1993-1996 by id Software
@@ -29,7 +29,7 @@
  */
 
 static const char
-rcsid[] = "$Id: i_video.c,v 1.6 2000/11/22 21:46:48 proff_fs Exp $";
+rcsid[] = "$Id: i_video.c,v 1.1.1.1 2000/09/20 09:46:45 figgi Exp $";
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -81,6 +81,11 @@ int XShmQueryExtension(Display* dpy); // CP added
 
 #ifdef HAVE_LIBXXF86DGA
 #include <X11/extensions/xf86dga.h>
+#endif
+
+#ifdef I386
+void (*R_DrawColumn)(void);
+void (*R_DrawTLColumn)(void);
 #endif
 
 void M_QuitDOOM(int choice);
@@ -570,7 +575,13 @@ static void I_XInitInputs(void)
 //
 // Returns true if it thinks we can afford to skip this frame
 
-inline static boolean I_SkipFrame(void)
+// Proff - added __inline for VisualC
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif
+static boolean I_SkipFrame(void)
 {
   static int frameno;
 
@@ -981,10 +992,25 @@ void I_PreInitGraphics(void)
 
 void I_SetRes(unsigned int width, unsigned int height)
 {
-  SCREENWIDTH = X_width = (width+3) & ~3;
+#ifdef HIGHRES
+  SCREENWIDTH = 
+#endif
+    X_width = (width+3) & ~3;
 
-  SCREENHEIGHT = X_height = (height+3) & ~3;
+#ifdef HIGHRES
+  SCREENHEIGHT = 
+#endif
+    X_height = (height+3) & ~3;
 
+#ifdef I386
+  if (SCREENWIDTH == 320) {
+    R_DrawColumn = R_DrawColumn_Normal;
+    R_DrawTLColumn = R_DrawTLColumn_Normal;
+  } else {
+    R_DrawColumn = R_DrawColumn_HighRes;
+    R_DrawTLColumn = R_DrawTLColumn_HighRes;
+  }
+#endif
   lprintf(LO_INFO,"I_SetRes: Using resolution %dx%d\n", SCREENWIDTH, SCREENHEIGHT);
 }
 

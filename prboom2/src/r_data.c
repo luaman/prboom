@@ -1,7 +1,7 @@
 /* Emacs style mode select   -*- C++ -*- 
  *-----------------------------------------------------------------------------
  *
- * $Id: r_data.c,v 1.13 2000/11/22 21:46:48 proff_fs Exp $
+ * $Id: r_data.c,v 1.1.1.2 2000/09/20 09:45:23 figgi Exp $
  *
  *  PrBoom a Doom port merged with LxDoom and LSDLDoom
  *  based on BOOM, a modified and improved DOOM engine
@@ -32,7 +32,7 @@
  *-----------------------------------------------------------------------------*/
 
 static const char
-rcsid[] = "$Id: r_data.c,v 1.13 2000/11/22 21:46:48 proff_fs Exp $";
+rcsid[] = "$Id: r_data.c,v 1.1.1.2 2000/09/20 09:45:23 figgi Exp $";
 
 #include "doomstat.h"
 #include "w_wad.h"
@@ -310,7 +310,7 @@ static void R_GenerateLookup(int texnum, int *const errors)
                     "\nR_GenerateLookup: Column %d is without a patch in texture %.8s",
                     x, texture->name);
             if (errors) ++*errors;
-	    else I_Error("R_GenerateLookup: Failed");
+	    else I_Error("R_GenerateLookup failed");
           }
         if (count[x].patches > 1)       // killough 4/9/98
           {
@@ -479,7 +479,7 @@ void R_InitTextures (void)
       offset = LONG(*directory);
 
       if (offset > maxoff)
-        I_Error("R_InitTextures: Bad texture directory");
+        I_Error("R_InitTextures: bad texture directory");
 
       mtexture = (maptexture_t *) ( (byte *)maptex + offset);
 
@@ -512,22 +512,15 @@ void R_InitTextures (void)
        * but I don't believe the pointers to memcpy have to be aligned 
        * either. Use fast memcpy on other machines anyway.
        */
-/*
-  proff - I took this out, because Oli Kraus (olikraus@yahoo.com) told
-  me the memcpy produced a buserror. Since this function isn't time-
-  critical I'm using the for loop now.
-*/
-/*
 #ifndef GCC
       memcpy(texture->name, mtexture->name, sizeof(texture->name));
 #else
-*/
       { 
-	      int j; 
-	      for(j=0;j<sizeof(texture->name);j++) 
-	        texture->name[j]=mtexture->name[j]; 
+	 int j; 
+	 for(j=0;j<sizeof(texture->name);j++) 
+	    texture->name[j]=mtexture->name[j]; 
       }
-/* #endif */
+#endif
 
       mpatch = mtexture->patches;
       patch = texture->patches;
@@ -563,7 +556,7 @@ void R_InitTextures (void)
       W_UnlockLumpNum(maptex_lump[i]);
 
   if (errors)
-    I_Error("R_InitTextures: %d errors", errors);
+    I_Error("\n\n%d errors.", errors);
     
   // Precalculate whatever possible.
   if (devparm) // cph - If in development mode, generate now so all errors are found at once
@@ -571,7 +564,7 @@ void R_InitTextures (void)
       R_GenerateLookup(i, &errors);
 
   if (errors)
-    I_Error("R_InitTextures: %d errors", errors);
+    I_Error("\n\n%d errors.", errors);
 
   // Create translation table for global animation.
   // killough 4/9/98: make column offsets 32-bit;
@@ -658,6 +651,22 @@ void R_InitSpriteLumps(void)
 // killough 4/4/98: Add support for C_START/C_END markers
 //
 
+// CPhipps - reinstate 256-byte alignment of colourmaps for I386 targets
+static void* R_GetColourmaps(int lump)
+{
+#ifdef I386
+  // Load in the light tables, 
+  //  256 byte align tables.
+  void  *colormaps;
+  size_t length = W_LumpLength (lump) + 255; 
+  colormaps = Z_Malloc (length, PU_STATIC, 0); 
+  colormaps = (byte *)( ((int)colormaps + 255)&~0xff); 
+  W_ReadLump (lump,colormaps); 
+  return colormaps;
+#else
+  return W_CacheLumpNum(lump);
+#endif
+}
 void R_InitColormaps(void)
 {
   int i;
@@ -665,9 +674,9 @@ void R_InitColormaps(void)
   lastcolormaplump  = W_GetNumForName("C_END");
   numcolormaps = lastcolormaplump - firstcolormaplump;
   colormaps = Z_Malloc(sizeof(*colormaps) * numcolormaps, PU_STATIC, 0);
-  colormaps[0] = (lighttable_t *)W_CacheLumpName("COLORMAP");
+  colormaps[0] = R_GetColourmaps(W_GetNumForName("COLORMAP"));
   for (i=1; i<numcolormaps; i++)
-    colormaps[i] = (lighttable_t *)W_CacheLumpNum(i+firstcolormaplump); 
+    colormaps[i] = R_GetColourmaps(i+firstcolormaplump); 
   // cph - always lock
 }
 
