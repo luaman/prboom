@@ -1,0 +1,50 @@
+Entrys marked by a * are fixed.
+
+--------------------------------------------------------------------------
+3.  Testing on Voodoo.
+
+Proff:
+It runs, but on Voodoo1 cards it's very very slow. Other cards aren't tested,
+but I guess on Voodoo3s and above it should work.
+2000/10/04:
+It does work with the beta OpenGL driver, but with the normal drivers only at
+a very low framerate. Further testing needed.
+
+--------------------------------------------------------------------------
+15. Hardware music synth support for SDL target. timidity is
+    nice, but some of the music sounds no good (notably MAP01).
+    I suggest a cheat code to toggle software vs hardware.
+    At least, for Linux this is easy, just call the old music
+    server. (Not essential for first release).
+
+Proff:
+This will be added to SDL_mixer, so we can do that after the release with
+an updated dll.
+2001/02/18 Proff: Released new SDL_mixer_beta.dll
+
+--------------------------------------------------------------------------
+21. Bug with the CapsLock key.
+
+Proff:
+Works, but you have to press it twice to change running speed (why?).
+
+--------------------------------------------------------------------------
+27. (2000/10/08) There is a memory leak in the OpenGL part.
+
+2000/10/08 Proff:
+Everytime a level is loaded some bytes more are allocated. It seems to be
+dependant on the size of level how much is allocated. I just can't find
+the leak.
+
+--------------------------------------------------------------------------
+30. (2000/11/13) Port joystick stuff to SDL
+
+2001/02/18 proff: Done
+
+--------------------------------------------------------------------------
+33. (2000/12/24) Single key quit
+
+Colin: opulent wants the old 'q quits demo recording' feature back. 
+ I suggest making it a configurable key setting, not bound to any 
+ key by default.
+
